@@ -1,0 +1,24 @@
+# Render Blueprint: the server's hosting setup as code, committed with the app.
+services:
+  - type: web
+    name: getaway-agent
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: singapore # closest Render region to Melbourne
+    healthCheckPath: /health
+    autoDeploy: true # redeploy automatically on every push to main
+    envVars:
+      # sync: false = Render asks you for the value in the dashboard; it is never stored in this file.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MAPS_SERVER_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: GEMINI_FALLBACK_MODEL
+        sync: false
+      # Render generates a long random value for the app token.
+      - key: APP_ACCESS_TOKEN
+        generateValue: true

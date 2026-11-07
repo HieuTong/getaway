@@ -1,0 +1,4 @@
+# Never copy secrets or local environments into the image.
+.env
+.venv/
+__pycache__/

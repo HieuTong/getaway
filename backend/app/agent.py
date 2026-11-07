@@ -50,7 +50,7 @@ _client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(
         retry_options=types.HttpRetryOptions(
-            attempts=4, initial_delay=2.0, max_delay=20.0, http_status_codes=sorted(TEMPORARY_STATUS_CODES)
+            attempts=3, initial_delay=1.0, max_delay=8.0, http_status_codes=sorted(TEMPORARY_STATUS_CODES)
         )
     ),
 )
