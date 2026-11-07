@@ -1,0 +1,23 @@
+{
+  "model": "Historical average",
+  "wape_test": 0.17235681414604187,
+  "wape_public_holidays": 0.7396443486213684,
+  "peak_hour_error": 4.333333333333333,
+  "holiday_peaks": {
+    "2025-12-25": {
+      "actual_peak": "12:00",
+      "predicted_peak": "17:00",
+      "error_hours": 5
+    },
+    "2025-12-26": {
+      "actual_peak": "12:00",
+      "predicted_peak": "16:00",
+      "error_hours": 4
+    },
+    "2026-01-01": {
+      "actual_peak": "13:00",
+      "predicted_peak": "17:00",
+      "error_hours": 4
+    }
+  }
+}

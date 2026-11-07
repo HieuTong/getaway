@@ -1,2 +1,4 @@
-pandas
-numpy
+numpy<2
+pandas>=2.2,<3
+lightgbm
+torch

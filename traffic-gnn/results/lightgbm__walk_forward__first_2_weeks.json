@@ -1,0 +1,23 @@
+{
+  "model": "LightGBM (walk-forward, first 2 weeks)",
+  "wape_test": 0.16624431275241977,
+  "wape_public_holidays": 0.25205583265650566,
+  "peak_hour_error": 0.3333333333333333,
+  "holiday_peaks": {
+    "2025-12-25": {
+      "actual_peak": "12:00",
+      "predicted_peak": "12:00",
+      "error_hours": 0
+    },
+    "2025-12-26": {
+      "actual_peak": "12:00",
+      "predicted_peak": "12:00",
+      "error_hours": 0
+    },
+    "2026-01-01": {
+      "actual_peak": "13:00",
+      "predicted_peak": "12:00",
+      "error_hours": 1
+    }
+  }
+}

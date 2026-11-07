@@ -1,0 +1,23 @@
+{
+  "model": "Same model without graph (walk-forward, first 2 weeks)",
+  "wape_test": 0.20935457944869995,
+  "wape_public_holidays": 0.30836063623428345,
+  "peak_hour_error": 2.6666666666666665,
+  "holiday_peaks": {
+    "2025-12-25": {
+      "actual_peak": "12:00",
+      "predicted_peak": "16:00",
+      "error_hours": 4
+    },
+    "2025-12-26": {
+      "actual_peak": "12:00",
+      "predicted_peak": "14:00",
+      "error_hours": 2
+    },
+    "2026-01-01": {
+      "actual_peak": "13:00",
+      "predicted_peak": "11:00",
+      "error_hours": 2
+    }
+  }
+}

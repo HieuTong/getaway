@@ -1,0 +1,23 @@
+{
+  "model": "GNN (graph + GRU) (walk-forward, first 2 weeks)",
+  "wape_test": 0.194395050406456,
+  "wape_public_holidays": 0.2816327214241028,
+  "peak_hour_error": 1.6666666666666667,
+  "holiday_peaks": {
+    "2025-12-25": {
+      "actual_peak": "12:00",
+      "predicted_peak": "15:00",
+      "error_hours": 3
+    },
+    "2025-12-26": {
+      "actual_peak": "12:00",
+      "predicted_peak": "13:00",
+      "error_hours": 1
+    },
+    "2026-01-01": {
+      "actual_peak": "13:00",
+      "predicted_peak": "12:00",
+      "error_hours": 1
+    }
+  }
+}
