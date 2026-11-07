@@ -1,8 +1,7 @@
-"""Tools the agent can call.
+"""Data tools used by the trip-planning pipeline.
 
-Gemini reads each function's name, type hints and docstring to decide when and how to call it,
-so the docstrings here are part of the prompt, not just comments.
-Tools return errors as data ({"error": ...}) instead of raising, so the model can recover.
+These are plain functions called by our own code (not by Gemini), so they can run in parallel.
+They return empty results instead of raising, so one failed lookup doesn't sink the whole plan.
 """
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
@@ -15,19 +14,11 @@ from .config import MAPS_SERVER_KEY
 
 MELBOURNE = (-37.8136, 144.9631)
 MELBOURNE_TZ = ZoneInfo("Australia/Melbourne")
-_http = httpx.Client(timeout=15)
+_http = httpx.Client(timeout=15)  # thread-safe: shared by the parallel searches
 
 
 def search_places(query: str) -> dict:
-    """Search Google Places for day-trip destinations around Melbourne, Victoria.
-
-    Args:
-        query: What to look for, for example "shaded rainforest walks" or "quiet surf beaches".
-
-    Returns:
-        {"places": [...]} with up to 8 places, each with place_id, name, address, rating,
-        latitude and longitude. Or {"error": ...} if the search failed.
-    """
+    """Places API (New) text search around Melbourne. Returns {"places": [...]} or {"error": ...}."""
     try:
         response = _http.post(
             "https://places.googleapis.com/v1/places:searchText",
@@ -65,72 +56,51 @@ def search_places(query: str) -> dict:
     return {"places": places}
 
 
-def drive_minutes(
+def drive_minutes_matrix(
     origin_latitude: float,
     origin_longitude: float,
-    destination_latitude: float,
-    destination_longitude: float,
-    departure_time: str,
-) -> dict:
-    """Predicted driving time in minutes, using typical traffic for that departure time.
+    destinations: list[tuple[float, float]],
+    departure: datetime,
+) -> list[int | None]:
+    """Predicted drive minutes from one origin to MANY destinations, in ONE Route Matrix request.
 
-    Args:
-        origin_latitude: Start latitude.
-        origin_longitude: Start longitude.
-        destination_latitude: Destination latitude.
-        destination_longitude: Destination longitude.
-        departure_time: Melbourne local time in ISO 8601, for example "2026-12-26T08:00:00". Must be in the future.
-
-    Returns:
-        {"minutes": number} or {"error": ...}.
+    Returns one value per destination, in the same order; None where no route was found.
     """
-    try:
-        departure = datetime.fromisoformat(departure_time)
-    except ValueError:
-        return {"error": "departure_time must look like 2026-12-26T08:00:00"}
-    if departure.tzinfo is None:
-        departure = departure.replace(tzinfo=MELBOURNE_TZ)
 
     def waypoint(latitude: float, longitude: float) -> dict:
-        return {"location": {"latLng": {"latitude": latitude, "longitude": longitude}}}
+        return {"waypoint": {"location": {"latLng": {"latitude": latitude, "longitude": longitude}}}}
 
+    minutes: list[int | None] = [None] * len(destinations)
+    if not destinations:
+        return minutes
     try:
         response = _http.post(
-            "https://routes.googleapis.com/directions/v2:computeRoutes",
-            headers={"X-Goog-Api-Key": MAPS_SERVER_KEY, "X-Goog-FieldMask": "routes.duration"},
+            "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+            headers={
+                "X-Goog-Api-Key": MAPS_SERVER_KEY,
+                "X-Goog-FieldMask": "originIndex,destinationIndex,duration,condition",
+            },
             json={
-                "origin": waypoint(origin_latitude, origin_longitude),
-                "destination": waypoint(destination_latitude, destination_longitude),
+                "origins": [waypoint(origin_latitude, origin_longitude)],
+                "destinations": [waypoint(latitude, longitude) for latitude, longitude in destinations],
                 "travelMode": "DRIVE",
-                "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
+                "routingPreference": "TRAFFIC_AWARE",
                 "departureTime": departure.isoformat(),
             },
         )
         response.raise_for_status()
-    except httpx.HTTPError as error:
-        return {"error": f"Routes request failed: {error}"}
+    except httpx.HTTPError:
+        return minutes  # plan without drive times rather than failing completely
 
-    routes = response.json().get("routes", [])
-    if not routes:
-        return {"error": "No driving route found."}
-    seconds = int(routes[0]["duration"].rstrip("s"))  # Google sends durations like "5520s"
-    return {"minutes": round(seconds / 60)}
+    for element in response.json():
+        # Google's JSON omits fields whose value is the default, so index 0 arrives as "missing".
+        index = element.get("destinationIndex", 0)
+        if element.get("condition") == "ROUTE_EXISTS" and "duration" in element:
+            minutes[index] = round(int(element["duration"].rstrip("s")) / 60)  # "5520s" -> 92
+    return minutes
 
 
-def sunset_time(latitude: float, longitude: float, date_iso: str) -> dict:
-    """Local sunset time at a place on a date. Use it to make sure a trip finishes before dark.
-
-    Args:
-        latitude: Place latitude.
-        longitude: Place longitude.
-        date_iso: The date as "YYYY-MM-DD".
-
-    Returns:
-        {"sunset": "HH:MM"} in Melbourne time, or {"error": ...}.
-    """
-    try:
-        day = date.fromisoformat(date_iso)
-    except ValueError:
-        return {"error": "date_iso must look like 2026-12-26"}
+def sunset_time(latitude: float, longitude: float, day: date) -> str:
+    """Local sunset time ("HH:MM", Melbourne time) at a place on a date. Pure maths, no API call."""
     times = sun(Observer(latitude=latitude, longitude=longitude), date=day, tzinfo=MELBOURNE_TZ)
-    return {"sunset": times["sunset"].strftime("%H:%M")}
+    return times["sunset"].strftime("%H:%M")
