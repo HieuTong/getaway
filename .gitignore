@@ -14,3 +14,5 @@ xcuserdata/
 DerivedData/
 *.xcuserstate
 .DS_Store
+traffic-gnn/data/
+traffic-gnn/.venv/
