@@ -14,6 +14,9 @@ packages:
   GoogleMaps:
     url: https://github.com/googlemaps/ios-maps-sdk
     exactVersion: 11.2.0
+  GooglePlaces:
+    url: https://github.com/googlemaps/ios-places-sdk
+    exactVersion: 11.3.0
 
 targets:
   Getaway:
@@ -34,3 +37,5 @@ targets:
     dependencies:
       - package: GoogleMaps
         product: GoogleMaps
+      - package: GooglePlaces
+        product: GooglePlacesSwift

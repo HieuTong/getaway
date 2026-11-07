@@ -1,5 +1,6 @@
 import UIKit
 import GoogleMaps
+import GooglePlacesSwift
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -13,6 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             fatalError("Missing Google Maps API key. Copy Secrets.example.xcconfig to Secrets.xcconfig and paste your key.")
         }
         GMSServices.provideAPIKey(apiKey)
+        _ = PlacesClient.provideAPIKey(apiKey) // separate SDK, so it needs the key separately
         return true
     }
 
