@@ -30,7 +30,7 @@ final class AgentService {
 
     private let session: URLSession = {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 90 // the agent makes several tool calls, plus retries
+        configuration.timeoutIntervalForRequest = 130 // room for a free-plan cold start (about a minute) plus the agent's work
         return URLSession(configuration: configuration)
     }()
 
@@ -48,6 +48,7 @@ final class AgentService {
         var request = URLRequest(url: AppConfig.agentBaseURL.appendingPathComponent("plan"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(AppConfig.agentAccessToken, forHTTPHeaderField: "X-App-Token")
 
         let body = PlanRequest(query: query,
                                originLatitude: origin.latitude,

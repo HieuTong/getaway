@@ -22,22 +22,28 @@ enum RoutesError: LocalizedError {
 @MainActor
 final class RoutesService {
 
-    private var cache: [String: [RouteEstimate]] = [:] // keyed by destination + rounded origin
+    private var cache: [String: [RouteEstimate]] = [:] // keyed by destination + rounded origin + day
 
     private let endpoint = URL(string: "https://routes.googleapis.com/directions/v2:computeRoutes")!
     private let apiKey = AppConfig.googleAPIKey
     private let bundleID = AppConfig.bundleID
 
-    /// Drive estimates from the user's current location for several departure times tomorrow,
-    /// fetched in parallel, sorted by departure.
-    func leaveTimeEstimates(to destination: Destination) async throws -> [RouteEstimate] {
+    /// Drive estimates from the user's current location for several departure times on `day`
+    /// (tomorrow when nil), fetched in parallel, sorted by departure.
+    func leaveTimeEstimates(to destination: Destination, on day: Date? = nil) async throws -> [RouteEstimate] {
+        let departures = Self.candidateDepartures(on: day)
+        guard let firstDeparture = departures.first else { return [] }
+
         let origin = try await LocationProvider.shared.currentCoordinate()
-        let cacheKey = Self.cacheKey(destinationID: destination.id, origin: origin)
+        // The day is part of the key: Boxing Day traffic is not tomorrow's traffic.
+        let cacheKey = String(format: "%@|%.2f,%.2f|%d",
+                              destination.id, origin.latitude, origin.longitude,
+                              Int(firstDeparture.timeIntervalSince1970))
         if let cached = cache[cacheKey] { return cached }
 
         let target = destination.coordinate
         let estimates = try await withThrowingTaskGroup(of: RouteEstimate.self) { group in
-            for departure in Self.candidateDepartures() {
+            for departure in departures {
                 group.addTask {
                     try await self.computeRoute(from: origin, to: target, departingAt: departure)
                 }
@@ -51,18 +57,17 @@ final class RoutesService {
         return estimates
     }
 
-    /// Rounding the origin to about 1 km means GPS jitter still hits the cache,
-    /// but moving to another suburb fetches fresh times.
-    private static func cacheKey(destinationID: String, origin: CLLocationCoordinate2D) -> String {
-        String(format: "%@|%.2f,%.2f", destinationID, origin.latitude, origin.longitude)
-    }
-
-    /// 7am, 9am, 11am and 1pm tomorrow, Melbourne time.
-    static func candidateDepartures(now: Date = Date()) -> [Date] {
+    /// 7am, 9am, 11am and 1pm Melbourne time on `day` (tomorrow when nil), skipping any time already past.
+    static func candidateDepartures(on day: Date? = nil, now: Date = Date()) -> [Date] {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Australia/Melbourne")!
-        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) else { return [] }
-        return [7, 9, 11, 13].compactMap { calendar.date(bySettingHour: $0, minute: 0, second: 0, of: tomorrow) }
+        let startOfToday = calendar.startOfDay(for: now)
+        let tripDay = day.map { calendar.startOfDay(for: $0) }
+            ?? calendar.date(byAdding: .day, value: 1, to: startOfToday)!
+        let earliest = now.addingTimeInterval(5 * 60) // Routes only predicts departures in the future
+        return [7, 9, 11, 13]
+            .compactMap { calendar.date(bySettingHour: $0, minute: 0, second: 0, of: tripDay) }
+            .filter { $0 > earliest }
     }
 
     // MARK: - One Routes API call

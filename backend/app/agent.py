@@ -11,6 +11,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from . import tools
+from .parsing import drive_limit_minutes
 from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODELS, GEMINI_MODEL
 
 # Errors that mean "this model can't serve us right now" (overloaded or out of quota): try the next model.
@@ -184,7 +185,7 @@ def _build_plan(chosen: Choices, candidates: dict[str, dict]) -> Plan:
 
 def _rule_based_plan(query: str, places: list[dict]) -> Plan:
     """No AI available: the top-rated candidates that fit the user's drive limit, explained plainly."""
-    limit = _drive_limit_minutes(query)
+    limit = drive_limit_minutes(query)
     eligible = [
         p for p in places
         if p.get("drive_minutes") is not None and (limit is None or p["drive_minutes"] <= limit)
@@ -217,16 +218,6 @@ def _plain_reason(place: dict) -> str:
     return text[0].upper() + text[1:]
 
 
-def _drive_limit_minutes(query: str) -> int | None:
-    """Reads limits like "under 90 minutes drive" or "2 hours away". None if the request gives no drive limit."""
-    lowered = query.lower()
-    if "drive" not in lowered and "away" not in lowered:
-        return None  # "a 2 hour hike" is about walking time, not driving
-    match = re.search(r"(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?)\b", lowered)
-    if not match:
-        return None
-    value, unit = float(match.group(1)), match.group(2)
-    return int(value * 60) if unit.startswith("h") else int(value)
 
 
 def _generate(model: str, system_prompt: str, contents: str, schema: type[BaseModel]) -> BaseModel:

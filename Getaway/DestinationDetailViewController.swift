@@ -17,6 +17,7 @@ final class DestinationDetailViewController: UIViewController {
     private let routesService: RoutesService
     private let onBestRoute: (RouteEstimate) -> Void
     private let onDismiss: () -> Void
+    private let tripDate: Date? // the day the user is planning for; nil means tomorrow
     private var loadTask: Task<Void, Never>?
 
     private var collectionView: UICollectionView!
@@ -26,6 +27,19 @@ final class DestinationDetailViewController: UIViewController {
     private var reasonItems: [Item] {
         destination.agentReason.map { [.reason($0)] } ?? []
     }
+
+    /// "Leaving tomorrow..." or "Leaving Sat 27 Dec...", matching the day the user is planning for.
+    private var leavingHeaderText: String {
+        guard let tripDate else { return "Leaving tomorrow from your location" }
+        return "Leaving \(Self.dayFormatter.string(from: tripDate)) from your location"
+    }
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Australia/Melbourne")
+        formatter.setLocalizedDateFormatFromTemplate("EEE d MMM") // "Sat 27 Dec", ordered for the user's language
+        return formatter
+    }()
 
     // Formatters are expensive to create, so make each one once and reuse it.
     private static let timeFormatter: DateFormatter = {
@@ -45,10 +59,12 @@ final class DestinationDetailViewController: UIViewController {
 
     init(destination: Destination,
          routesService: RoutesService,
+         tripDate: Date? = nil,
          onBestRoute: @escaping (RouteEstimate) -> Void,
          onDismiss: @escaping () -> Void) {
         self.destination = destination
         self.routesService = routesService
+        self.tripDate = tripDate
         self.onBestRoute = onBestRoute
         self.onDismiss = onDismiss
         super.init(nibName: nil, bundle: nil)
@@ -242,11 +258,12 @@ final class DestinationDetailViewController: UIViewController {
             cell.contentConfiguration = content
         }
 
+        let headerText = leavingHeaderText
         let headerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
             elementKind: UICollectionView.elementKindSectionHeader
         ) { header, _, _ in
             var content = UIListContentConfiguration.groupedHeader()
-            content.text = "Leaving tomorrow from your location"
+            content.text = headerText
             header.contentConfiguration = content
         }
 
@@ -285,7 +302,7 @@ final class DestinationDetailViewController: UIViewController {
         loadTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let estimates = try await routesService.leaveTimeEstimates(to: destination)
+                let estimates = try await routesService.leaveTimeEstimates(to: destination, on: tripDate)
                 guard !Task.isCancelled else { return }
                 showEstimates(estimates)
             } catch {

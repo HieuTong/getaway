@@ -15,9 +15,17 @@ enum AppConfig {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "AgentBaseURL") as? String,
               let url = URL(string: value),
               url.scheme != nil else {
-            fatalError("Missing AGENT_BASE_URL in Secrets.xcconfig, for example: AGENT_BASE_URL = http:/$()/127.0.0.1:8000")
+            fatalError("Missing AGENT_BASE_URL in Secrets.xcconfig, for example: AGENT_BASE_URL = https:/$()/getaway-agent.onrender.com")
         }
         return url
+    }()
+
+    static let agentAccessToken: String = {
+        guard let token = Bundle.main.object(forInfoDictionaryKey: "AgentAccessToken") as? String,
+              !token.isEmpty else {
+            fatalError("Missing AGENT_ACCESS_TOKEN in Secrets.xcconfig. Copy it from Render's Environment tab.")
+        }
+        return token
     }()
 
     static let bundleID = Bundle.main.bundleIdentifier ?? ""

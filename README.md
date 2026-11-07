@@ -1,5 +1,9 @@
 # Getaway 🌊🥾
 
+![Backend tests](https://github.com/HieuTong/getaway/actions/workflows/backend-tests.yml/badge.svg)
+
+![Backend tests](https://github.com/HieuTong/getaway/actions/workflows/backend-tests.yml/badge.svg)
+
 **An iOS trip planner for Victorian summer getaways, built on Google Maps Platform.**
 
 Find real beaches, bushwalks and lookouts near Melbourne, see **when to leave** to beat holiday traffic, and get **in-app turn-by-turn navigation** from where you are.

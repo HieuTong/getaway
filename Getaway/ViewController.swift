@@ -10,6 +10,7 @@ final class ViewController: UIViewController {
     private var searchTask: Task<Void, Never>? // the current category search OR agent request
     private var routeLine: GMSPolyline?
     private var isShowingDetail = false
+    private var agentTripDate: Date? // the day the AI picks on the map were planned for
 
     private lazy var kindControl: UISegmentedControl = {
         let control = UISegmentedControl(items: Destination.Kind.browsable.map(\.label))
@@ -165,6 +166,7 @@ final class ViewController: UIViewController {
     // MARK: - Browsing categories
 
     @objc private func kindChanged() {
+        agentTripDate = nil
         showSummary(nil)
         let kind = Destination.Kind.browsable[kindControl.selectedSegmentIndex]
         loadDestinations(of: kind)
@@ -216,6 +218,7 @@ final class ViewController: UIViewController {
                 let origin = try await LocationProvider.shared.currentCoordinate()
                 let plan = try await agentService.plan(query: query, from: origin, on: date)
                 guard !Task.isCancelled else { return }
+                agentTripDate = date
                 showAgentPlan(plan)
             } catch {
                 guard !Task.isCancelled else { return }
@@ -290,6 +293,7 @@ final class ViewController: UIViewController {
         let detail = DestinationDetailViewController(
             destination: destination,
             routesService: routesService,
+            tripDate: destination.kind == .suggestion ? agentTripDate : nil,
             onBestRoute: { [weak self] route in self?.drawRoute(route) },
             onDismiss: { [weak self] in
                 self?.isShowingDetail = false
