@@ -31,6 +31,12 @@ def plan(request: PlanRequest) -> Plan:
         return plan_trip(request.query, request.origin_latitude, request.origin_longitude, request.trip_date)
     except genai_errors.APIError as error:
         logger.warning("Gemini error %s for query %r: %s", error.code, request.query, error)
+        if error.code == 429:
+            raise HTTPException(
+                status_code=503,
+                detail="The trip planner has reached its usage limit for now. Please try again later.",
+                headers={"Retry-After": "3600"},
+            )
         if error.code in TEMPORARY_STATUS_CODES:
             # Temporary: 503 + Retry-After tells any client "this will work later".
             raise HTTPException(

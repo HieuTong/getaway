@@ -1,4 +1,6 @@
 import functools
+import threading
+import time
 from datetime import date
 
 from google import genai
@@ -9,9 +11,12 @@ from pydantic import BaseModel
 from . import tools
 from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODEL, GEMINI_MODEL
 
-# Errors that mean "busy, try later": overloaded (503) or rate-limited (429).
-# Anything else (bad key, unknown model) won't fix itself, so it's never retried.
+# Errors that mean "this model can't serve us right now". Both send us to the fallback model.
 TEMPORARY_STATUS_CODES = {429, 503}
+# Only overload (503) clears within seconds. A 429 is often a daily quota, so retrying the same model is pointless.
+RETRY_SAME_MODEL_CODES = [503]
+
+PLAN_CACHE_SECONDS = 6 * 60 * 60  # identical requests within 6 hours reuse the saved plan
 
 
 class Suggestion(BaseModel):
@@ -31,10 +36,12 @@ class Plan(BaseModel):
 
 SYSTEM_PROMPT = """You are Getaway, a day-trip planner for people leaving from Melbourne, Victoria, Australia.
 
-How to work:
-- Use search_places to find candidates. Try more than one search if the first results don't fit.
-- Use drive_minutes from the user's starting point, for a sensible departure time on the trip date.
-- For walks and hikes, use sunset_time and leave enough time to drive there, walk, and drive back before dark.
+How to work (each round of tool calls costs time and money, so use as few rounds as possible):
+- Round 1: call search_places, once or twice in the SAME turn if you want different kinds of candidates.
+- Round 2: pick your best 3 candidates, then in the SAME turn call drive_minutes for all of them
+  and sunset_time once (sunset barely changes across places near Melbourne).
+- Then answer. Don't call a tool again for something you already know.
+- For walks and hikes, leave enough time to drive there, walk, and drive back before dark.
 - Respect the user's limits, such as maximum drive time.
 
 Rules:
@@ -45,30 +52,44 @@ Rules:
   "reason": "...", "drive_minutes": 0, "leave_by": "HH:MM"}]}
 """
 
-# Layer 1: retry temporary failures on the SAME model, with exponential backoff (about 2s, 4s, 8s).
+# Retry overload (503) on the same model with short exponential backoff (about 1s, 2s).
 _client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(
         retry_options=types.HttpRetryOptions(
-            attempts=3, initial_delay=1.0, max_delay=8.0, http_status_codes=sorted(TEMPORARY_STATUS_CODES)
+            attempts=3, initial_delay=1.0, max_delay=8.0, http_status_codes=RETRY_SAME_MODEL_CODES
         )
     ),
 )
 
+# In-memory cache of recent plans. FastAPI runs requests on several threads, so access is guarded by a lock.
+_cache: dict[tuple, tuple[float, Plan]] = {}
+_cache_lock = threading.Lock()
+
 
 def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_date: date) -> Plan:
+    # Same question, same day, same ~1 km starting area -> same answer. Rounding stops GPS jitter missing the cache.
+    key = (" ".join(query.lower().split()), trip_date.isoformat(), round(origin_latitude, 2), round(origin_longitude, 2))
+    with _cache_lock:
+        cached = _cache.get(key)
+        if cached and time.time() - cached[0] < PLAN_CACHE_SECONDS:
+            return cached[1]
+
     prompt = (
         f"Request: {query}\n"
         f"Trip date: {trip_date.isoformat()}\n"
         f"Starting point: {origin_latitude}, {origin_longitude}"
     )
 
-    # Layer 2: if the main model is still overloaded after its retries, try the fallback model,
-    # which runs on separate capacity. Planning only reads data, so running it again is safe.
+    # If a model can't serve us (overloaded or out of quota), try the fallback model, which has its own capacity
+    # and its own quota. Planning only reads data, so running it again is safe.
     models = [GEMINI_MODEL] + ([GEMINI_FALLBACK_MODEL] if GEMINI_FALLBACK_MODEL else [])
     for index, model in enumerate(models):
         try:
-            return _run_agent(model, prompt)
+            plan = _run_agent(model, prompt)
+            with _cache_lock:
+                _cache[key] = (time.time(), plan)
+            return plan
         except genai_errors.APIError as error:
             is_last_model = index == len(models) - 1
             if error.code in TEMPORARY_STATUS_CODES and not is_last_model:
@@ -89,15 +110,15 @@ def _run_agent(model: str, prompt: str) -> Plan:
         seen_place_ids.update(place["place_id"] for place in result.get("places", []))
         return result
 
-    # A tool-calling agent is a multi-turn conversation (model -> tool -> model -> ...),
+    # A tool-calling agent is a multi-turn conversation (model -> tools -> model -> ...),
     # so we use a chat. A new chat per request keeps users' trips separate.
     chat = _client.chats.create(
         model=model,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             tools=[search_places, tools.drive_minutes, tools.sunset_time],
-            # The SDK runs the tool loop for us; this caps it so a confused model can't loop forever.
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=15),
+            # Hard cap on tool calls, so a confused model can't burn through the quota.
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=8),
             temperature=0.2,  # planning, not creative writing: keep answers consistent
         ),
     )
