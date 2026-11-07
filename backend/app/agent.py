@@ -1,4 +1,5 @@
 import json
+import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -10,16 +11,23 @@ from google.genai import types
 from pydantic import BaseModel
 
 from . import tools
-from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODEL, GEMINI_MODEL
+from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODELS, GEMINI_MODEL
 
-# Errors that mean "this model can't serve us right now". Both send us to the fallback model.
+# Errors that mean "this model can't serve us right now" (overloaded or out of quota): try the next model.
 TEMPORARY_STATUS_CODES = {429, 503}
-# Only overload (503) clears within seconds. A 429 is often a daily quota, so retrying the same model is pointless.
+# Only overload (503) clears within seconds. A 429 is usually the daily quota, so don't retry the same model.
 RETRY_SAME_MODEL_CODES = [503]
 
 PLAN_CACHE_SECONDS = 6 * 60 * 60  # identical requests within 6 hours reuse the saved plan
-MAX_SEARCHES = 2
 MAX_CANDIDATES = 8
+
+# Plain-code search planning: map words in the request to a category search. No AI call needed.
+CATEGORY_SEARCHES = {
+    "hiking trails and bushwalks": ("hike", "hiking", "walk", "bushwalk", "trail", "forest"),
+    "beaches": ("beach", "swim", "surf", "coast"),
+    "scenic lookouts": ("lookout", "view", "scenic"),
+    "waterfalls": ("waterfall", "falls"),
+}
 
 
 # ---------- What the app receives (unchanged, so the iOS app needs no update) ----------
@@ -39,11 +47,7 @@ class Plan(BaseModel):
     suggestions: list[Suggestion]
 
 
-# ---------- What Gemini returns (structured output: the SDK validates these shapes) ----------
-
-class SearchPlan(BaseModel):
-    queries: list[str]
-
+# ---------- What Gemini returns (structured output: the SDK validates this shape) ----------
 
 class Choice(BaseModel):
     place_id: str
@@ -55,10 +59,6 @@ class Choices(BaseModel):
     summary: str
     choices: list[Choice]
 
-
-SEARCH_PROMPT = """You turn a day-trip request from someone in Melbourne, Victoria, Australia into
-Google Places text-search queries. Return 1 or 2 short, specific queries
-(for example "shaded rainforest walks" or "quiet swimming beaches"). Do not add a location."""
 
 CHOOSE_PROMPT = """You are Getaway, a day-trip planner for people leaving from Melbourne, Victoria, Australia.
 You receive the user's request and a list of real candidate places with predicted drive times.
@@ -81,9 +81,9 @@ _client = genai.Client(
     ),
 )
 
-_pool = ThreadPoolExecutor(max_workers=MAX_SEARCHES)  # runs the Places searches side by side
+_pool = ThreadPoolExecutor(max_workers=2)  # runs the Places searches side by side
 
-# In-memory cache of recent plans. FastAPI runs requests on several threads, so access is guarded by a lock.
+# In-memory cache of recent AI plans. FastAPI runs requests on several threads, so access is guarded by a lock.
 _cache: dict[tuple, tuple[float, Plan]] = {}
 _cache_lock = threading.Lock()
 
@@ -97,41 +97,13 @@ def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_
             print(f"plan served from cache for {query!r}")
             return cached[1]
 
-    # If a model can't serve us (overloaded or out of quota), try the fallback model, which has its own
-    # capacity and quota. Planning only reads data, so running it again is safe.
-    models = [GEMINI_MODEL] + ([GEMINI_FALLBACK_MODEL] if GEMINI_FALLBACK_MODEL else [])
-    for index, model in enumerate(models):
-        try:
-            started = time.perf_counter()
-            plan = _run_pipeline(model, query, origin_latitude, origin_longitude, trip_date)
-            print(f"plan ready in {time.perf_counter() - started:.1f}s with {model} (2 Gemini calls)")
-            with _cache_lock:
-                _cache[key] = (time.time(), plan)
-            return plan
-        except genai_errors.APIError as error:
-            is_last_model = index == len(models) - 1
-            if error.code in TEMPORARY_STATUS_CODES and not is_last_model:
-                print(f"Model {model} unavailable ({error.code}); trying {models[index + 1]}")
-                continue
-            raise
-    raise RuntimeError("no Gemini model configured")  # unreachable: GEMINI_MODEL is required
+    started = time.perf_counter()
 
-
-def _run_pipeline(model: str, query: str, origin_latitude: float, origin_longitude: float, trip_date: date) -> Plan:
-    # Gemini call 1: understand the request well enough to know what to search for.
-    search_plan = _generate(model, SEARCH_PROMPT, f"Request: {query}", SearchPlan)
-    queries = [q.strip() for q in search_plan.queries if q.strip()][:MAX_SEARCHES] or [query]
-
-    # Plain code: run the searches in parallel and merge them, keeping each place once.
-    candidates: dict[str, dict] = {}
-    for result in _pool.map(tools.search_places, queries):
-        for place in result.get("places", []):
-            candidates.setdefault(place["place_id"], place)
+    # 1. Plain code collects the facts ONCE, whichever model (if any) ends up answering.
+    candidates = _search(query)
     places = list(candidates.values())[:MAX_CANDIDATES]
     if not places:
         return Plan(summary="No places matched that request. Try describing it differently.", suggestions=[])
-
-    # Plain code: every drive time in ONE Route Matrix request, plus sunset (pure maths, no API).
     departure = _departure_time(trip_date)
     minutes = tools.drive_minutes_matrix(
         origin_latitude, origin_longitude, [(p["latitude"], p["longitude"]) for p in places], departure
@@ -140,7 +112,7 @@ def _run_pipeline(model: str, query: str, origin_latitude: float, origin_longitu
         place["drive_minutes"] = drive
     sunset = tools.sunset_time(origin_latitude, origin_longitude, trip_date)
 
-    # Gemini call 2: judgement and writing, using only facts our code collected.
+    # 2. One Gemini call to choose and explain, trying each model in turn.
     facts = {
         "request": query,
         "trip_date": trip_date.isoformat(),
@@ -151,8 +123,42 @@ def _run_pipeline(model: str, query: str, origin_latitude: float, origin_longitu
             for place in places
         ],
     }
-    chosen = _generate(model, CHOOSE_PROMPT, json.dumps(facts), Choices)
+    for model in [GEMINI_MODEL] + GEMINI_FALLBACK_MODELS:
+        try:
+            chosen = _generate(model, CHOOSE_PROMPT, json.dumps(facts), Choices)
+        except genai_errors.APIError as error:
+            if error.code in TEMPORARY_STATUS_CODES:
+                print(f"Model {model} unavailable ({error.code}); trying the next option")
+                continue
+            raise  # permanent problem (bad key, unknown model): report it
+        plan = _build_plan(chosen, candidates)
+        print(f"plan ready in {time.perf_counter() - started:.1f}s with {model} (1 Gemini call)")
+        with _cache_lock:
+            _cache[key] = (time.time(), plan)
+        return plan
 
+    # 3. Every model is busy or out of free quota: degrade gracefully instead of failing.
+    #    Not cached, so the next request gets an AI answer once quota is back.
+    print(f"plan ready in {time.perf_counter() - started:.1f}s with the rule-based fallback (no AI)")
+    return _rule_based_plan(query, places)
+
+
+def _search(query: str) -> dict[str, dict]:
+    """Search with the user's own words plus a matching category, in parallel, keeping each place once."""
+    queries = [query]
+    lowered = query.lower()
+    for category, words in CATEGORY_SEARCHES.items():
+        if any(word in lowered for word in words):
+            queries.append(category)
+            break
+    candidates: dict[str, dict] = {}
+    for result in _pool.map(tools.search_places, queries):
+        for place in result.get("places", []):
+            candidates.setdefault(place["place_id"], place)
+    return candidates
+
+
+def _build_plan(chosen: Choices, candidates: dict[str, dict]) -> Plan:
     # Code owns the facts: names, coordinates and drive times come from Google's data, never from the model.
     # Any place ID the model invented isn't in `candidates`, so it's dropped here.
     suggestions = []
@@ -174,6 +180,53 @@ def _run_pipeline(model: str, query: str, origin_latitude: float, origin_longitu
         if len(suggestions) == 3:
             break
     return Plan(summary=chosen.summary, suggestions=suggestions)
+
+
+def _rule_based_plan(query: str, places: list[dict]) -> Plan:
+    """No AI available: the top-rated candidates that fit the user's drive limit, explained plainly."""
+    limit = _drive_limit_minutes(query)
+    eligible = [
+        p for p in places
+        if p.get("drive_minutes") is not None and (limit is None or p["drive_minutes"] <= limit)
+    ]
+    ranked = sorted(eligible, key=lambda p: (-(p.get("rating") or 0), p["drive_minutes"]))[:3]
+    suggestions = [
+        Suggestion(
+            place_id=p["place_id"],
+            name=p["name"],
+            latitude=p["latitude"],
+            longitude=p["longitude"],
+            reason=_plain_reason(p),
+            drive_minutes=p["drive_minutes"],
+        )
+        for p in ranked
+    ]
+    within = f" within {limit} minutes' drive" if limit else ""
+    return Plan(
+        summary=f"The AI planner is resting for today, so here are the best-rated matches{within}.",
+        suggestions=suggestions,
+    )
+
+
+def _plain_reason(place: dict) -> str:
+    parts = []
+    if place.get("rating"):
+        parts.append(f"Rated {place['rating']:.1f}")
+    parts.append(f"about {place['drive_minutes']} min drive")
+    text = ", ".join(parts) + "."
+    return text[0].upper() + text[1:]
+
+
+def _drive_limit_minutes(query: str) -> int | None:
+    """Reads limits like "under 90 minutes drive" or "2 hours away". None if the request gives no drive limit."""
+    lowered = query.lower()
+    if "drive" not in lowered and "away" not in lowered:
+        return None  # "a 2 hour hike" is about walking time, not driving
+    match = re.search(r"(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?)\b", lowered)
+    if not match:
+        return None
+    value, unit = float(match.group(1)), match.group(2)
+    return int(value * 60) if unit.startswith("h") else int(value)
 
 
 def _generate(model: str, system_prompt: str, contents: str, schema: type[BaseModel]) -> BaseModel:
