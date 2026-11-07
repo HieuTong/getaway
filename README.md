@@ -116,3 +116,39 @@ project.yml                                    XcodeGen project definition
 ## Author
 
 **Hugh (Hieu) Le**, iOS engineer and Master of AI student at RMIT · [GitHub](https://github.com/HieuTong)
+
+## Experiment: holiday traffic forecasting with a graph neural network
+
+**Question:** at midnight, can we forecast the next 24 hours of traffic at 58 signalised intersections on the
+Nepean Highway (St Kilda to Mornington), including Christmas Day, Boxing Day and New Year's Day?
+
+**Data:** Victoria's open traffic-signal data (SCATS 15-minute detector counts, CC BY 4.0), Sep 2025 to Jan 2026,
+aggregated to hourly counts per intersection. Detectors with incomplete days or alarms were removed.
+
+**Method:** trained on data before 20 Dec 2025; tested on 20 Dec 2025 to 31 Jan 2026 (never seen in training).
+Also evaluated walk-forward: each week retrained from scratch on all earlier data. Metric: WAPE (total absolute
+error / total actual traffic), plus the error in the predicted busiest hour on the three public holidays.
+
+| Model | WAPE, test period | WAPE, public holidays | Peak-hour error on holidays |
+|---|---|---|---|
+| LightGBM | 10.9% | 25.9% | 0.3 h |
+| GNN (graph + GRU) | 14.0% | 27.8% | 2.0 h |
+| Same model without graph (ablation) | 14.3% | 28.9% | 2.0 h |
+| Same hour last week | 17.0% | 61.1% | 3.3 h |
+| Historical average | 17.2% | 74.0% | 4.3 h |
+
+Walk-forward (first two weeks, holiday columns comparable): LightGBM 25.2% / 0.3 h, GNN 28.2% / 1.7 h,
+same model without graph 30.8% / 2.7 h.
+
+**Findings**
+- LightGBM was the most accurate model, including on public holidays.
+- The GNN cut holiday error by more than half compared with simple baselines, but did not beat LightGBM.
+- The road graph gave a small, consistent improvement over the identical model without it
+  (single training run each; repeating with several random seeds is the next step to confirm it).
+- Weekly retraining barely improved holiday forecasts: two recent holiday days are too few to learn from.
+
+**Limitations:** detector counts measure traffic volume, not speed, and a car is counted at many intersections;
+one corridor of signalised roads only (no freeways); only one holiday season in the data.
+
+**Next steps:** add previous years' holiday periods, build edges from real road connections (OpenStreetMap),
+cover a larger part of the network, and repeat training over several seeds.
