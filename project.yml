@@ -11,12 +11,13 @@ configFiles:
   Release: Secrets.xcconfig
 
 packages:
-  GoogleMaps:
-    url: https://github.com/googlemaps/ios-maps-sdk
-    exactVersion: 11.2.0
+  # The Navigation SDK includes its own GoogleMaps module, so the separate Maps package is removed.
+  GoogleNavigation:
+    url: https://github.com/googlemaps/ios-navigation-sdk
+    exactVersion: 11.3.0
   GooglePlaces:
     url: https://github.com/googlemaps/ios-places-sdk
-    exactVersion: 11.3.0
+    exactVersion: 11.3.0 # Google recommends matching Places and Navigation versions
 
 targets:
   Getaway:
@@ -35,7 +36,7 @@ targets:
         SWIFT_VERSION: "5.0"
         CODE_SIGN_STYLE: Automatic
     dependencies:
-      - package: GoogleMaps
-        product: GoogleMaps
+      - package: GoogleNavigation
+        product: GoogleNavigation
       - package: GooglePlaces
         product: GooglePlacesSwift

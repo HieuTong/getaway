@@ -26,6 +26,17 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Getaway uses your location to give you turn-by-turn directions.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Getaway uses your location to keep guiding you when the screen is off or you switch apps.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Getaway uses motion sensors to improve navigation accuracy.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

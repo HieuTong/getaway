@@ -5,7 +5,10 @@ final class ViewController: UIViewController {
 
     private var mapView: GMSMapView!
     private let placesService = PlacesService()
+    private let routesService = RoutesService()
     private var searchTask: Task<Void, Never>?
+    private var routeLine: GMSPolyline?
+    private var isShowingDetail = false
 
     private lazy var kindControl: UISegmentedControl = {
         let control = UISegmentedControl(items: Destination.Kind.allCases.map(\.label))
@@ -32,10 +35,14 @@ final class ViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Safe-area insets are only known after layout. Padding keeps pins, the Google logo
-        // and camera fitting clear of the status bar and the segmented control.
-        mapView.padding = UIEdgeInsets(top: view.safeAreaInsets.top + 52, left: 0,
-                                       bottom: view.safeAreaInsets.bottom, right: 0)
+        updateMapPadding()
+    }
+
+    /// Tells the SDK which part of the map is actually visible, so camera fitting
+    /// and the Google logo avoid the status bar, the segmented control and the sheet.
+    private func updateMapPadding() {
+        let bottom = isShowingDetail ? view.bounds.height * 0.5 : view.safeAreaInsets.bottom
+        mapView.padding = UIEdgeInsets(top: view.safeAreaInsets.top + 52, left: 0, bottom: bottom, right: 0)
     }
 
     // MARK: - Setup
@@ -44,6 +51,9 @@ final class ViewController: UIViewController {
         let options = GMSMapViewOptions()
         options.camera = GMSCameraPosition(latitude: -37.8136, longitude: 144.9631, zoom: 8) // Melbourne CBD
         mapView = GMSMapView(options: options)
+        mapView.delegate = self
+        mapView.isMyLocationEnabled = true
+        mapView.settings.myLocationButton = true
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         NSLayoutConstraint.activate([
@@ -66,7 +76,7 @@ final class ViewController: UIViewController {
         ])
     }
 
-    // MARK: - Loading
+    // MARK: - Loading destinations
 
     @objc private func kindChanged() {
         let kind = Destination.Kind.allCases[kindControl.selectedSegmentIndex]
@@ -91,7 +101,8 @@ final class ViewController: UIViewController {
     }
 
     private func show(_ destinations: [Destination]) {
-        mapView.clear() // removes all markers from the previous search
+        mapView.clear() // removes markers and any route line from before
+        routeLine = nil
         guard !destinations.isEmpty else {
             showMessage("No places found", detail: "Try another category.")
             return
@@ -101,12 +112,59 @@ final class ViewController: UIViewController {
             let marker = GMSMarker(position: destination.coordinate)
             marker.title = destination.name
             marker.snippet = destination.subtitle
-            marker.icon = GMSMarker.markerImage(with: destination.kind.markerColor)
+            marker.icon = GMSMarker.markerImage(with: destination.kind.color)
+            marker.userData = destination // lets a tapped marker tell us which place it is
             marker.map = mapView
             bounds = bounds.includingCoordinate(destination.coordinate)
         }
         mapView.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 60))
     }
+
+    // MARK: - Detail sheet and route
+
+    private func showDetail(for destination: Destination) {
+        let detail = DestinationDetailViewController(
+            destination: destination,
+            routesService: routesService,
+            onBestRoute: { [weak self] route in self?.drawRoute(route) },
+            onDismiss: { [weak self] in
+                self?.isShowingDetail = false
+                self?.updateMapPadding()
+            }
+        )
+        if let sheet = detail.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.largestUndimmedDetentIdentifier = .medium // map stays bright and usable above the sheet
+        }
+
+        let presentDetail = { [weak self] in
+            guard let self else { return }
+            isShowingDetail = true
+            updateMapPadding()
+            present(detail, animated: true)
+        }
+        // Only one sheet at a time: close the old one first, then open the new one.
+        if presentedViewController != nil {
+            dismiss(animated: true, completion: presentDetail)
+        } else {
+            presentDetail()
+        }
+    }
+
+    private func drawRoute(_ route: RouteEstimate) {
+        routeLine?.map = nil
+        guard let encoded = route.encodedPolyline,
+              let path = GMSPath(fromEncodedPath: encoded) else { return }
+        let line = GMSPolyline(path: path)
+        line.strokeWidth = 5
+        line.strokeColor = .systemBlue
+        line.map = mapView
+        routeLine = line
+        mapView.animate(with: GMSCameraUpdate.fit(GMSCoordinateBounds(path: path), withPadding: 60))
+    }
+
+    // MARK: - Alerts
 
     private func showError(_ error: Error) {
         showMessage("Search failed", detail: error.localizedDescription)
@@ -119,6 +177,16 @@ final class ViewController: UIViewController {
     }
 }
 
+// MARK: - GMSMapViewDelegate
+
+extension ViewController: GMSMapViewDelegate {
+    func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
+        guard let destination = marker.userData as? Destination else { return false }
+        showDetail(for: destination)
+        return false // keep the SDK default: centre on the marker and show its info window
+    }
+}
+
 // UI-only knowledge lives with the UI, not in the model.
 private extension Destination {
     var subtitle: String {
@@ -127,12 +195,3 @@ private extension Destination {
     }
 }
 
-private extension Destination.Kind {
-    var markerColor: UIColor {
-        switch self {
-        case .beach: return .systemTeal
-        case .hike: return .systemGreen
-        case .lookout: return .systemOrange
-        }
-    }
-}
