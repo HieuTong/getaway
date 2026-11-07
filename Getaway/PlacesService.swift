@@ -42,6 +42,7 @@ private extension Destination.Kind {
         case .beach: return "beaches near Melbourne, Victoria"
         case .hike: return "bushwalking trails near Melbourne, Victoria"
         case .lookout: return "scenic lookouts near Melbourne, Victoria"
+        case .suggestion: return "" // AI picks come from the agent, never from a category search
         }
     }
 }

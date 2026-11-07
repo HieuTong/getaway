@@ -8,6 +8,7 @@ extension Destination.Kind {
         case .beach: return .systemTeal
         case .hike: return .systemGreen
         case .lookout: return .systemOrange
+        case .suggestion: return .systemPurple
         }
     }
 
@@ -16,6 +17,7 @@ extension Destination.Kind {
         case .beach: return "beach.umbrella.fill"
         case .hike: return "figure.hiking"
         case .lookout: return "binoculars.fill"
+        case .suggestion: return "sparkles"
         }
     }
 
@@ -24,6 +26,7 @@ extension Destination.Kind {
         case .beach: return "Beach"
         case .hike: return "Hike"
         case .lookout: return "Lookout"
+        case .suggestion: return "AI pick"
         }
     }
 }

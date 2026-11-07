@@ -2,11 +2,16 @@ import functools
 from datetime import date
 
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from pydantic import BaseModel
 
 from . import tools
-from .config import GEMINI_API_KEY, GEMINI_MODEL
+from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODEL, GEMINI_MODEL
+
+# Errors that mean "busy, try later": overloaded (503) or rate-limited (429).
+# Anything else (bad key, unknown model) won't fix itself, so it's never retried.
+TEMPORARY_STATUS_CODES = {429, 503}
 
 
 class Suggestion(BaseModel):
@@ -40,11 +45,41 @@ Rules:
   "reason": "...", "drive_minutes": 0, "leave_by": "HH:MM"}]}
 """
 
-_client = genai.Client(api_key=GEMINI_API_KEY)
+# Layer 1: retry temporary failures on the SAME model, with exponential backoff (about 2s, 4s, 8s).
+_client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(
+        retry_options=types.HttpRetryOptions(
+            attempts=4, initial_delay=2.0, max_delay=20.0, http_status_codes=sorted(TEMPORARY_STATUS_CODES)
+        )
+    ),
+)
 
 
 def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_date: date) -> Plan:
-    # Remember every place ID the search tool really returned during this request,
+    prompt = (
+        f"Request: {query}\n"
+        f"Trip date: {trip_date.isoformat()}\n"
+        f"Starting point: {origin_latitude}, {origin_longitude}"
+    )
+
+    # Layer 2: if the main model is still overloaded after its retries, try the fallback model,
+    # which runs on separate capacity. Planning only reads data, so running it again is safe.
+    models = [GEMINI_MODEL] + ([GEMINI_FALLBACK_MODEL] if GEMINI_FALLBACK_MODEL else [])
+    for index, model in enumerate(models):
+        try:
+            return _run_agent(model, prompt)
+        except genai_errors.APIError as error:
+            is_last_model = index == len(models) - 1
+            if error.code in TEMPORARY_STATUS_CODES and not is_last_model:
+                print(f"Model {model} unavailable ({error.code}); trying {models[index + 1]}")
+                continue
+            raise
+    raise RuntimeError("no Gemini model configured")  # unreachable: GEMINI_MODEL is required
+
+
+def _run_agent(model: str, prompt: str) -> Plan:
+    # Fresh per attempt: the place IDs this attempt's search tool really returned,
     # so we can reject any suggestion the model made up.
     seen_place_ids: set[str] = set()
 
@@ -54,16 +89,10 @@ def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_
         seen_place_ids.update(place["place_id"] for place in result.get("places", []))
         return result
 
-    prompt = (
-        f"Request: {query}\n"
-        f"Trip date: {trip_date.isoformat()}\n"
-        f"Starting point: {origin_latitude}, {origin_longitude}"
-    )
-
     # A tool-calling agent is a multi-turn conversation (model -> tool -> model -> ...),
-    # so we use a chat, which keeps that history. A new chat per request keeps users' trips separate.
+    # so we use a chat. A new chat per request keeps users' trips separate.
     chat = _client.chats.create(
-        model=GEMINI_MODEL,
+        model=model,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             tools=[search_places, tools.drive_minutes, tools.sunset_time],

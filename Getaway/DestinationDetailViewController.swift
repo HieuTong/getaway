@@ -6,6 +6,7 @@ final class DestinationDetailViewController: UIViewController {
 
     // Every row the list can show. Diffable data sources need items to be Hashable.
     private enum Item: Hashable {
+        case reason(String)
         case loading
         case failed(message: String)
         case summary(String)
@@ -20,6 +21,11 @@ final class DestinationDetailViewController: UIViewController {
 
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+
+    /// The agent's "why", shown first for AI picks. Empty for normal category results.
+    private var reasonItems: [Item] {
+        destination.agentReason.map { [.reason($0)] } ?? []
+    }
 
     // Formatters are expensive to create, so make each one once and reuse it.
     private static let timeFormatter: DateFormatter = {
@@ -129,14 +135,15 @@ final class DestinationDetailViewController: UIViewController {
         topRow.spacing = 12
         topRow.alignment = .center
 
-        var directions = UIButton.Configuration.filled()
-        directions.title = "Start"
-        directions.image = UIImage(systemName: "car.fill")
-        directions.imagePadding = 8
-        directions.buttonSize = .large
-        directions.cornerStyle = .large
-        let directionsButton = UIButton(configuration: directions, primaryAction: UIAction { [weak self] _ in
-            if let self { self.present(NavigationViewController(destination: self.destination), animated: true) }
+        var start = UIButton.Configuration.filled()
+        start.title = "Start"
+        start.image = UIImage(systemName: "car.fill")
+        start.imagePadding = 8
+        start.buttonSize = .large
+        start.cornerStyle = .large
+        let startButton = UIButton(configuration: start, primaryAction: UIAction { [weak self] _ in
+            guard let self else { return }
+            present(NavigationViewController(destination: destination), animated: true)
         })
 
         var rows: [UIView] = [topRow]
@@ -149,7 +156,7 @@ final class DestinationDetailViewController: UIViewController {
             addressLabel.numberOfLines = 2
             rows.append(addressLabel)
         }
-        rows.append(directionsButton)
+        rows.append(startButton)
 
         let stack = UIStackView(arrangedSubviews: rows)
         stack.axis = .vertical
@@ -188,6 +195,13 @@ final class DestinationDetailViewController: UIViewController {
             cell.accessories = []
 
             switch item {
+            case .reason(let text):
+                content = .cell()
+                content.image = UIImage(systemName: "sparkles")
+                content.imageProperties.tintColor = .systemPurple
+                content.text = text
+                content.textProperties.numberOfLines = 0 // the agent's reason can wrap over several lines
+
             case .loading:
                 content.text = "Checking traffic…"
                 content.textProperties.color = .secondaryLabel
@@ -267,7 +281,7 @@ final class DestinationDetailViewController: UIViewController {
 
     private func loadEstimates() {
         loadTask?.cancel()
-        showItems([.loading])
+        showItems(reasonItems + [.loading])
         loadTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -276,7 +290,7 @@ final class DestinationDetailViewController: UIViewController {
                 showEstimates(estimates)
             } catch {
                 guard !Task.isCancelled else { return }
-                showItems([.failed(message: error.localizedDescription)])
+                showItems(reasonItems + [.failed(message: error.localizedDescription)])
             }
         }
     }
@@ -284,7 +298,7 @@ final class DestinationDetailViewController: UIViewController {
     private func showEstimates(_ estimates: [RouteEstimate]) {
         guard let best = estimates.min(by: { $0.duration < $1.duration }),
               let worst = estimates.max(by: { $0.duration < $1.duration }) else {
-            showItems([.failed(message: "Google returned no drive times.")])
+            showItems(reasonItems + [.failed(message: "Google returned no drive times.")])
             return
         }
 
@@ -298,10 +312,9 @@ final class DestinationDetailViewController: UIViewController {
                           duration: estimate.duration,
                           isBest: estimate.departure == best.departure)
         }
-        showItems([.summary(summary)] + rows)
+        showItems(reasonItems + [.summary(summary)] + rows)
         onBestRoute(best)
     }
-
 }
 
 // MARK: - UICollectionViewDelegate

@@ -1,12 +1,14 @@
+import logging
 from datetime import date
 
 from fastapi import FastAPI, HTTPException
 from google.genai import errors as genai_errors
 from pydantic import BaseModel, Field
 
-from .agent import Plan, plan_trip
+from .agent import TEMPORARY_STATUS_CODES, Plan, plan_trip
 
 app = FastAPI(title="Getaway agent")
+logger = logging.getLogger("uvicorn.error")  # uvicorn's logger, so messages appear in the server terminal
 
 
 class PlanRequest(BaseModel):
@@ -28,7 +30,16 @@ def plan(request: PlanRequest) -> Plan:
     try:
         return plan_trip(request.query, request.origin_latitude, request.origin_longitude, request.trip_date)
     except genai_errors.APIError as error:
-        # Gemini itself refused the request (bad key, unknown model, quota...). 502 = the service behind us failed.
+        logger.warning("Gemini error %s for query %r: %s", error.code, request.query, error)
+        if error.code in TEMPORARY_STATUS_CODES:
+            # Temporary: 503 + Retry-After tells any client "this will work later".
+            raise HTTPException(
+                status_code=503,
+                detail="The trip planner is very busy right now. Please try again in a minute.",
+                headers={"Retry-After": "30"},
+            )
+        # Permanent (bad key, unknown model): our configuration is wrong, so it's a 502.
         raise HTTPException(status_code=502, detail=f"Gemini request failed: {error}")
     except ValueError as error:
+        logger.warning("Unusable agent answer for query %r: %s", request.query, error)
         raise HTTPException(status_code=502, detail=f"The agent returned an unusable answer: {error}")
