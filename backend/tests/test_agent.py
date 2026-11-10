@@ -88,3 +88,41 @@ def test_route_matrix_reads_index_zero_even_when_google_omits_it(monkeypatch):
     )
 
     assert minutes == [60, None, 92]
+
+
+def test_route_matrix_refused_falls_back_to_compute_routes(monkeypatch):
+    import httpx
+
+    def fake_post(url, **kwargs):
+        request = httpx.Request("POST", url)
+        if "computeRouteMatrix" in url:
+            # Google's real Route Matrix error format: a list, even for errors.
+            body = [{"error": {"code": 403, "message": "Permission denied on the service."}}]
+            return httpx.Response(403, json=body, request=request)
+        return httpx.Response(200, json={"routes": [{"duration": "3600s"}]}, request=request)
+
+    monkeypatch.setattr(tools._http, "post", fake_post)
+    minutes = tools.drive_minutes_matrix(
+        -37.81, 144.96, [(-38.0, 145.0)] * 2, datetime(2026, 12, 27, 8, tzinfo=tools.MELBOURNE_TZ)
+    )
+
+    assert minutes == [60, 60]  # the fallback filled in every drive time
+
+
+def test_route_matrix_refused_falls_back_to_compute_routes(monkeypatch):
+    import httpx
+
+    def fake_post(url, **kwargs):
+        request = httpx.Request("POST", url)
+        if "computeRouteMatrix" in url:
+            # Google's real Route Matrix error format: a list, even for errors.
+            body = [{"error": {"code": 403, "message": "Permission denied on the service."}}]
+            return httpx.Response(403, json=body, request=request)
+        return httpx.Response(200, json={"routes": [{"duration": "3600s"}]}, request=request)
+
+    monkeypatch.setattr(tools._http, "post", fake_post)
+    minutes = tools.drive_minutes_matrix(
+        -37.81, 144.96, [(-38.0, 145.0)] * 2, datetime(2026, 12, 27, 8, tzinfo=tools.MELBOURNE_TZ)
+    )
+
+    assert minutes == [60, 60]  # the fallback filled in every drive time
