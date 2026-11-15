@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "cases": 1,
+    "answered_with_picks": "1/1 (100%)",
+    "answered_by_ai": "1/1 (100%)",
+    "within_drive_limit": "3/3 (100%)",
+    "back_before_dark": "n/a",
+    "relevant": "3/3 (100%)",
+    "median_seconds": 272.3,
+    "slowest_seconds": 272.3,
+    "picks_per_answered_case": 3
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 272.3,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJmycG6Rlv1moRjOuNp720eB0",
+          "name": "Sandringham Beach",
+          "latitude": -37.9550766,
+          "longitude": 145.0054854,
+          "reason": "Top-rated bay beach framed by picturesque red cliffs, featuring calm and clear waters ideal for swimming.",
+          "drive_minutes": 34,
+          "leave_by": "16:30"
+        },
+        {
+          "place_id": "ChIJgVgEM9Nt1moRguaC7qvkAsA",
+          "name": "Mordialloc Beach",
+          "latitude": -38.0041011,
+          "longitude": 145.0794421,
+          "reason": "A broad, sandy stretch with gentle shallows and easy access to local cafes and the pier.",
+          "drive_minutes": 39,
+          "leave_by": "16:30"
+        },
+        {
+          "place_id": "ChIJF9aBDErZ1WoRC2EKruksnAM",
+          "name": "Mills Beach",
+          "latitude": -38.2129374,
+          "longitude": 145.045784,
+          "reason": "Famous for its colorful bathing boxes and pristine, sheltered waters right at the gateway to the Mornington Peninsula.",
+          "drive_minutes": 58,
+          "leave_by": "16:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sandringham Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "34 min vs limit 60"
+        },
+        {
+          "place": "Sandringham Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mordialloc Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "39 min vs limit 60"
+        },
+        {
+          "place": "Mordialloc Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mills Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "58 min vs limit 60"
+        },
+        {
+          "place": "Mills Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    }
+  ]
+}

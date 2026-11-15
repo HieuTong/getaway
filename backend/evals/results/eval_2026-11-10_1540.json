@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "cases": 1,
+    "answered_with_picks": "1/1 (100%)",
+    "answered_by_ai": "0/1 (0%)",
+    "within_drive_limit": "3/3 (100%)",
+    "back_before_dark": "n/a",
+    "relevant": "3/3 (100%)",
+    "median_seconds": 14.4,
+    "slowest_seconds": 14.4,
+    "picks_per_answered_case": 3
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 14.4,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [
+        {
+          "place_id": "ChIJmycG6Rlv1moRjOuNp720eB0",
+          "name": "Sandringham Beach",
+          "latitude": -37.9550766,
+          "longitude": 145.0054854,
+          "reason": "Rated 4.8, about 34 min drive.",
+          "drive_minutes": 34,
+          "leave_by": null
+        },
+        {
+          "place_id": "ChIJgVgEM9Nt1moRguaC7qvkAsA",
+          "name": "Mordialloc Beach",
+          "latitude": -38.0041011,
+          "longitude": 145.0794421,
+          "reason": "Rated 4.7, about 39 min drive.",
+          "drive_minutes": 39,
+          "leave_by": null
+        },
+        {
+          "place_id": "ChIJey0z4Aln1moR9cS_PpAqwdU",
+          "name": "Sandridge Beach",
+          "latitude": -37.8401318,
+          "longitude": 144.91637369999998,
+          "reason": "Rated 4.6, about 15 min drive.",
+          "drive_minutes": 15,
+          "leave_by": null
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sandringham Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "34 min vs limit 60"
+        },
+        {
+          "place": "Sandringham Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mordialloc Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "39 min vs limit 60"
+        },
+        {
+          "place": "Mordialloc Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Sandridge Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "15 min vs limit 60"
+        },
+        {
+          "place": "Sandridge Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    }
+  ]
+}

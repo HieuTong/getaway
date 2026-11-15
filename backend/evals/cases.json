@@ -1,0 +1,17 @@
+[
+  {"id": "beach-60", "query": "a beach for a swim, under 60 minutes drive", "trip_date": "2026-12-05", "max_drive_minutes": 60, "expect_any": ["beach", "bay", "swim"]},
+  {"id": "shady-forest-90", "query": "a shady forest walk for a hot day, under 90 minutes drive", "trip_date": "2026-12-12", "max_drive_minutes": 90, "expect_any": ["forest", "walk", "trail", "rainforest", "gully"]},
+  {"id": "waterfall-dark", "query": "a waterfall hike, back before dark, under 2 hours drive", "trip_date": "2026-11-28", "max_drive_minutes": 120, "before_dark": true, "activity_hours": 3, "expect_any": ["fall", "waterfall", "cascade"]},
+  {"id": "kids-beach-75", "query": "a calm swimming beach for young kids, under 75 minutes drive", "trip_date": "2026-12-05", "max_drive_minutes": 75, "expect_any": ["beach", "bay", "swim"]},
+  {"id": "sunset-lookout-60", "query": "a lookout for sunset, under 60 minutes drive", "trip_date": "2026-11-21", "max_drive_minutes": 60, "expect_any": ["lookout", "view", "summit", "point", "hill"]},
+  {"id": "surf-120", "query": "a surf beach, 2 hours away at most", "trip_date": "2026-12-12", "max_drive_minutes": 120, "expect_any": ["beach", "surf", "point"]},
+  {"id": "easy-walk-45", "query": "an easy walk with a cafe nearby, under 45 minutes drive", "trip_date": "2026-11-21", "max_drive_minutes": 45, "expect_any": ["walk", "trail", "garden", "park", "reserve", "track"]},
+  {"id": "boxing-day-beach", "query": "a beach on Boxing Day, under 90 minutes drive", "trip_date": "2026-12-26", "max_drive_minutes": 90, "expect_any": ["beach", "bay", "swim"]},
+  {"id": "dandenongs-no-limit", "query": "a rainforest walk in the Dandenong Ranges", "trip_date": "2026-11-28", "expect_any": ["forest", "walk", "track", "gully", "falls", "ranges"]},
+  {"id": "hike-length-vs-drive", "query": "a 2 hour hike, under 60 minutes drive, back before dark", "trip_date": "2026-12-05", "max_drive_minutes": 60, "before_dark": true, "activity_hours": 2, "expect_any": ["walk", "trail", "track", "hike", "park", "reserve"]},
+  {"id": "dog-beach-80", "query": "a dog-friendly beach, under 80 minutes drive", "trip_date": "2026-12-12", "max_drive_minutes": 80, "expect_any": ["beach", "dog", "bay"]},
+  {"id": "picnic-view-70", "query": "a picnic spot with a view, under 70 minutes drive", "trip_date": "2026-11-21", "max_drive_minutes": 70, "expect_any": ["park", "lookout", "reserve", "garden", "view", "picnic"]},
+  {"id": "snorkel-120", "query": "a snorkelling spot, under 2 hours drive", "trip_date": "2026-12-05", "max_drive_minutes": 120, "expect_any": ["beach", "pier", "marine", "reef", "snorkel", "bay"]},
+  {"id": "impossible-ski-30", "query": "a ski resort under 30 minutes drive", "trip_date": "2026-12-12", "max_drive_minutes": 30},
+  {"id": "vague-quiet", "query": "somewhere quiet to relax", "trip_date": "2026-11-28"}
+]

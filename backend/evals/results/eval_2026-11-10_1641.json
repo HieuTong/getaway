@@ -1,0 +1,844 @@
+{
+  "summary": {
+    "cases": 15,
+    "answered_with_picks": "13/15 (87%)",
+    "answered_by_ai": "15/15 (100%)",
+    "within_drive_limit": "25/28 (89%)",
+    "back_before_dark": "3/3 (100%)",
+    "relevant": "31/31 (100%)",
+    "median_seconds": 4.1,
+    "slowest_seconds": 10.9,
+    "picks_per_answered_case": 2.5
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 10.9,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJey0z4Aln1moR9cS_PpAqwdU",
+          "name": "Sandridge Beach",
+          "latitude": -37.8401318,
+          "longitude": 144.91637369999998,
+          "reason": "Sandridge Beach is the closest option at just 15 minutes away, offering a quick and easy escape for a morning swim.",
+          "drive_minutes": 15,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJU1MecIZp1moRXOBGZpB6j4o",
+          "name": "Elwood Beach",
+          "latitude": -37.885773,
+          "longitude": 144.980225,
+          "reason": "Elwood Beach is a popular and scenic spot only 20 minutes from the city with calm waters.",
+          "drive_minutes": 20,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJMXwJ4dht1moRMbrTAoiKT2U",
+          "name": "Mentone Beach",
+          "latitude": -37.9875387,
+          "longitude": 145.05566900000002,
+          "reason": "Mentone Beach provides a lovely, relaxed coastal setting just 38 minutes down the bay.",
+          "drive_minutes": 38,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sandridge Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "15 min vs limit 60"
+        },
+        {
+          "place": "Sandridge Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Elwood Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "20 min vs limit 60"
+        },
+        {
+          "place": "Elwood Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "38 min vs limit 60"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    },
+    {
+      "id": "shady-forest-90",
+      "query": "a shady forest walk for a hot day, under 90 minutes drive",
+      "seconds": 4.2,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJE8g8r8EnKGsRFIfP0U7fjTI",
+          "name": "Wirrawilla Rainforest Walk",
+          "latitude": -37.5270217,
+          "longitude": 145.5211689,
+          "reason": "Wirrawilla Rainforest Walk offers a stunning, cool canopy of Myrtle Beech and tree ferns, perfect for beating the heat. The drive is just under the 90-minute limit.",
+          "drive_minutes": 88,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJ9UvrQIIk1moRAEt9IANVKmY",
+          "name": "Sherbrooke Falls",
+          "latitude": -37.8876048,
+          "longitude": 145.3520675,
+          "reason": "Sherbrooke Falls in the Dandenong Ranges provides a lush, shaded forest walk within a comfortable 48-minute drive from the city.",
+          "drive_minutes": 48,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJ7ZTderIg1moRYGsyBXZWBA8",
+          "name": "Wright Forest Bushland Reserve",
+          "latitude": -37.9345986,
+          "longitude": 145.47783619999998,
+          "reason": "Wright Forest Bushland Reserve offers peaceful, tree-lined tracks just over an hour's drive away in Cockatoo.",
+          "drive_minutes": 62,
+          "leave_by": "09:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Wirrawilla Rainforest Walk",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "88 min vs limit 90"
+        },
+        {
+          "place": "Wirrawilla Rainforest Walk",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'trail', 'rainforest', 'gully']"
+        },
+        {
+          "place": "Sherbrooke Falls",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "48 min vs limit 90"
+        },
+        {
+          "place": "Sherbrooke Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'trail', 'rainforest', 'gully']"
+        },
+        {
+          "place": "Wright Forest Bushland Reserve",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "62 min vs limit 90"
+        },
+        {
+          "place": "Wright Forest Bushland Reserve",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'trail', 'rainforest', 'gully']"
+        }
+      ]
+    },
+    {
+      "id": "waterfall-dark",
+      "query": "a waterfall hike, back before dark, under 2 hours drive",
+      "seconds": 4.5,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJ9UvrQIIk1moRAEt9IANVKmY",
+          "name": "Sherbrooke Falls",
+          "latitude": -37.8876048,
+          "longitude": 145.3520675,
+          "reason": "Sherbrooke Falls is a quick 48-minute drive away, offering a lush and easy walk in the Dandenong Ranges.",
+          "drive_minutes": 48,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJ-y8EF0DZ1moRpTWQt2_CGB0",
+          "name": "Trentham Falls Lookout, Coliban River",
+          "latitude": -37.3706411,
+          "longitude": 144.3256797,
+          "reason": "Trentham Falls is about a 73-minute drive and features a stunning single-drop waterfall.",
+          "drive_minutes": 73,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJ9TRh0yHJ1WoROpDFaJ02ABQ",
+          "name": "Kings Falls",
+          "latitude": -38.3715227,
+          "longitude": 144.9451479,
+          "reason": "Kings Falls on the Mornington Peninsula is a 70-minute drive, perfect for a pleasant bushwalk.",
+          "drive_minutes": 70,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sherbrooke Falls",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "48 min vs limit 120"
+        },
+        {
+          "place": "Sherbrooke Falls",
+          "check": "back_before_dark",
+          "passed": true,
+          "detail": "back about 12:36, sunset 20:23"
+        },
+        {
+          "place": "Sherbrooke Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['fall', 'waterfall', 'cascade']"
+        },
+        {
+          "place": "Trentham Falls Lookout, Coliban River",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "73 min vs limit 120"
+        },
+        {
+          "place": "Trentham Falls Lookout, Coliban River",
+          "check": "back_before_dark",
+          "passed": true,
+          "detail": "back about 13:26, sunset 20:23"
+        },
+        {
+          "place": "Trentham Falls Lookout, Coliban River",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['fall', 'waterfall', 'cascade']"
+        },
+        {
+          "place": "Kings Falls",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "70 min vs limit 120"
+        },
+        {
+          "place": "Kings Falls",
+          "check": "back_before_dark",
+          "passed": true,
+          "detail": "back about 13:20, sunset 20:23"
+        },
+        {
+          "place": "Kings Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['fall', 'waterfall', 'cascade']"
+        }
+      ]
+    },
+    {
+      "id": "kids-beach-75",
+      "query": "a calm swimming beach for young kids, under 75 minutes drive",
+      "seconds": 4.4,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJey0z4Aln1moR9cS_PpAqwdU",
+          "name": "Sandridge Beach",
+          "latitude": -37.8401318,
+          "longitude": 144.91637369999998,
+          "reason": "Sandridge Beach is very close to the city with gentle waters that are ideal for little ones.",
+          "drive_minutes": 15,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJMXwJ4dht1moRMbrTAoiKT2U",
+          "name": "Mentone Beach",
+          "latitude": -37.9875387,
+          "longitude": 145.05566900000002,
+          "reason": "Mentone Beach offers a sheltered shoreline and a relaxed environment suitable for families.",
+          "drive_minutes": 38,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJnce2vepy1moRfhhjoe_yIe4",
+          "name": "Chelsea Beach",
+          "latitude": -38.052977999999996,
+          "longitude": 145.1136072,
+          "reason": "Chelsea Beach features calm bay waters and soft sand, perfect for children to splash around safely.",
+          "drive_minutes": 46,
+          "leave_by": "09:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sandridge Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "15 min vs limit 75"
+        },
+        {
+          "place": "Sandridge Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "38 min vs limit 75"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Chelsea Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "46 min vs limit 75"
+        },
+        {
+          "place": "Chelsea Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    },
+    {
+      "id": "sunset-lookout-60",
+      "query": "a lookout for sunset, under 60 minutes drive",
+      "seconds": 6.3,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJb1xKRFFu1moRlOeX_0DH6Yw",
+          "name": "Red Bluff Lookout",
+          "latitude": -37.9645065,
+          "longitude": 145.01121179999998,
+          "reason": "Offers stunning coastal views across Port Phillip Bay, perfect for watching the sun go down. Leave by 19:15 to catch the golden hour before sunset.",
+          "drive_minutes": 36,
+          "leave_by": "19:15"
+        },
+        {
+          "place_id": "ChIJb1J98BEl1moR3rvGs03kxik",
+          "name": "Burkes Lookout",
+          "latitude": -37.8348346,
+          "longitude": 145.34678639999998,
+          "reason": "Perched high in the Dandenong Ranges with panoramic views stretching across the city skyline. Leave by 19:00 to account for the 58-minute drive.",
+          "drive_minutes": 58,
+          "leave_by": "19:00"
+        },
+        {
+          "place_id": "ChIJia72Io5o1moRiggVr6YUgtI",
+          "name": "Point Ormond Lookout",
+          "latitude": -37.8819552,
+          "longitude": 144.9762313,
+          "reason": "A fantastic vantage point on the bay with sweeping vistas and plenty of space to relax. Leave by 19:30 for a quick 20-minute drive.",
+          "drive_minutes": 20,
+          "leave_by": "19:30"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Red Bluff Lookout",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "36 min vs limit 60"
+        },
+        {
+          "place": "Red Bluff Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['lookout', 'view', 'summit', 'point', 'hill']"
+        },
+        {
+          "place": "Burkes Lookout",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "58 min vs limit 60"
+        },
+        {
+          "place": "Burkes Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['lookout', 'view', 'summit', 'point', 'hill']"
+        },
+        {
+          "place": "Point Ormond Lookout",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "20 min vs limit 60"
+        },
+        {
+          "place": "Point Ormond Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['lookout', 'view', 'summit', 'point', 'hill']"
+        }
+      ]
+    },
+    {
+      "id": "surf-120",
+      "query": "a surf beach, 2 hours away at most",
+      "seconds": 5.9,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJD53k_vg11GoRfB19yeSaFFQ",
+          "name": "Portsea Surf Beach",
+          "latitude": -38.333959199999995,
+          "longitude": 144.7019091,
+          "reason": "Portsea Surf Beach is a renowned rugged surf spot located about 90 minutes from Melbourne.",
+          "drive_minutes": 90,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJnUhqMMby1WoRsoOuCW2Qt_4",
+          "name": "Cape Woolamai Surf Beach",
+          "latitude": -38.544418,
+          "longitude": 145.339849,
+          "reason": "Cape Woolamai Surf Beach offers fantastic waves and stunning coastal scenery under two hours away.",
+          "drive_minutes": 98,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJGbW12w7z1WoRWpAfS0oiWK8",
+          "name": "Cape Woolamai Beach",
+          "latitude": -38.5334353,
+          "longitude": 145.3411291,
+          "reason": "Cape Woolamai Beach is another great option for surf enthusiasts looking for a manageable drive.",
+          "drive_minutes": 99,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Portsea Surf Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "90 min vs limit 120"
+        },
+        {
+          "place": "Portsea Surf Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'surf', 'point']"
+        },
+        {
+          "place": "Cape Woolamai Surf Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "98 min vs limit 120"
+        },
+        {
+          "place": "Cape Woolamai Surf Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'surf', 'point']"
+        },
+        {
+          "place": "Cape Woolamai Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "99 min vs limit 120"
+        },
+        {
+          "place": "Cape Woolamai Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'surf', 'point']"
+        }
+      ]
+    },
+    {
+      "id": "easy-walk-45",
+      "query": "an easy walk with a cafe nearby, under 45 minutes drive",
+      "seconds": 4.2,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJnQHt6Uld1moRgIUxBXZWBA8",
+          "name": "Flagstaff Gardens",
+          "latitude": -37.8105577,
+          "longitude": 144.95451989999998,
+          "reason": "Flagstaff Gardens offers a lovely, easy green walk with plenty of fantastic nearby cafes to grab a coffee afterwards.",
+          "drive_minutes": 5,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJJ5uqF8FC1moR-5LkmFPkK7U",
+          "name": "KereKere Green",
+          "latitude": -37.8149592,
+          "longitude": 144.9792754,
+          "reason": "Enjoy a scenic stroll through Fitzroy Gardens and stop by KereKere Green for a relaxing coffee and bite to eat.",
+          "drive_minutes": 7,
+          "leave_by": "09:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Flagstaff Gardens",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "5 min vs limit 45"
+        },
+        {
+          "place": "Flagstaff Gardens",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['walk', 'trail', 'garden', 'park', 'reserve', 'track']"
+        },
+        {
+          "place": "KereKere Green",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "7 min vs limit 45"
+        },
+        {
+          "place": "KereKere Green",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['walk', 'trail', 'garden', 'park', 'reserve', 'track']"
+        }
+      ]
+    },
+    {
+      "id": "boxing-day-beach",
+      "query": "a beach on Boxing Day, under 90 minutes drive",
+      "seconds": 3.8,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJFaGu2jJi1moRdtUZVz8LC3E",
+          "name": "Altona Beach",
+          "latitude": -37.8709525,
+          "longitude": 144.829985,
+          "reason": "Altona Beach is a quick 25-minute drive from the city and offers a calm shoreline ideal for relaxing.",
+          "drive_minutes": 25,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJn_DSSzRv1moRX3TPokTiWS4",
+          "name": "Brighton beach",
+          "latitude": -37.9159683,
+          "longitude": 144.9861397,
+          "reason": "Brighton Beach is only 27 minutes away and famous for its iconic, colorful bathing boxes.",
+          "drive_minutes": 27,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJzauR8R211WoR7xhO0NPIzPs",
+          "name": "Rye Ocean Beach",
+          "latitude": -38.4144037,
+          "longitude": 144.8172716,
+          "reason": "Rye Ocean Beach is about 76 minutes away on the Mornington Peninsula, offering a dramatic coastal surf experience.",
+          "drive_minutes": 76,
+          "leave_by": "08:30"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Altona Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "25 min vs limit 90"
+        },
+        {
+          "place": "Altona Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Brighton beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "27 min vs limit 90"
+        },
+        {
+          "place": "Brighton beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Rye Ocean Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "76 min vs limit 90"
+        },
+        {
+          "place": "Rye Ocean Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    },
+    {
+      "id": "dandenongs-no-limit",
+      "query": "a rainforest walk in the Dandenong Ranges",
+      "seconds": 4.1,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJ9UvrQIIk1moRAEt9IANVKmY",
+          "name": "Sherbrooke Falls",
+          "latitude": -37.8876048,
+          "longitude": 145.3520675,
+          "reason": "Sherbrooke Falls offers a stunning walk through lush mountain ash and tree fern gullies. It is a classic Dandenong Ranges rainforest experience.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJqeipof4k1moREPExBXZWBA8",
+          "name": "Dandenong Ranges National Park",
+          "latitude": -37.8900735,
+          "longitude": 145.3176822,
+          "reason": "Dandenong Ranges National Park provides extensive walking tracks winding through dense, cool-temperate rainforest. You can easily spend a full morning exploring the tranquil trails.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJ32_v75Al1moR4HQyBXZWBA8",
+          "name": "Olinda Falls",
+          "latitude": -37.8340244,
+          "longitude": 145.3699699,
+          "reason": "Olinda Falls is a shorter, rewarding walk featuring cascading streams and beautiful fern-filled gullies. It is a great spot to enjoy the peaceful surroundings.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sherbrooke Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        },
+        {
+          "place": "Dandenong Ranges National Park",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        },
+        {
+          "place": "Olinda Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        }
+      ]
+    },
+    {
+      "id": "hike-length-vs-drive",
+      "query": "a 2 hour hike, under 60 minutes drive, back before dark",
+      "seconds": 3.0,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "dog-beach-80",
+      "query": "a dog-friendly beach, under 80 minutes drive",
+      "seconds": 3.7,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJobmV2HNt1moRk2rQ5pM4qdE",
+          "name": "Mentone Beach Dog Off Leash Area",
+          "latitude": -37.9874185,
+          "longitude": 145.055502,
+          "reason": "Mentone Beach Dog Off Leash Area is an easy 38-minute drive from Melbourne and offers a fantastic off-leash experience for your dog. Leave by 08:00 for a great morning trip.",
+          "drive_minutes": 38,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Mentone Beach Dog Off Leash Area",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "38 min vs limit 80"
+        },
+        {
+          "place": "Mentone Beach Dog Off Leash Area",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'dog', 'bay']"
+        }
+      ]
+    },
+    {
+      "id": "picnic-view-70",
+      "query": "a picnic spot with a view, under 70 minutes drive",
+      "seconds": 3.8,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJwfcSZE1P1moR3avSwCxuISc",
+          "name": "Mount Cooper Lookout",
+          "latitude": -37.7005744,
+          "longitude": 145.0475392,
+          "reason": "Mount Cooper Lookout offers fantastic elevated views and a lovely spot for a relaxing picnic just north of the city.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJia72Io5o1moRiggVr6YUgtI",
+          "name": "Point Ormond Lookout",
+          "latitude": -37.8819552,
+          "longitude": 144.9762313,
+          "reason": "Point Ormond Lookout provides stunning panoramic views of the bay and city skyline, perfect for a seaside picnic.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        },
+        {
+          "place_id": "ChIJgzauR9lp1moRF6OoSsBRcGM",
+          "name": "Lakeside Lookout",
+          "latitude": -37.853021399999996,
+          "longitude": 144.9778507,
+          "reason": "Lakeside Lookout features tranquil water views and great grassy areas for setting up a relaxing daytime picnic.",
+          "drive_minutes": null,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Mount Cooper Lookout",
+          "check": "within_drive_limit",
+          "passed": false,
+          "detail": "None min vs limit 70"
+        },
+        {
+          "place": "Mount Cooper Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['park', 'lookout', 'reserve', 'garden', 'view', 'picnic']"
+        },
+        {
+          "place": "Point Ormond Lookout",
+          "check": "within_drive_limit",
+          "passed": false,
+          "detail": "None min vs limit 70"
+        },
+        {
+          "place": "Point Ormond Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['park', 'lookout', 'reserve', 'garden', 'view', 'picnic']"
+        },
+        {
+          "place": "Lakeside Lookout",
+          "check": "within_drive_limit",
+          "passed": false,
+          "detail": "None min vs limit 70"
+        },
+        {
+          "place": "Lakeside Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['park', 'lookout', 'reserve', 'garden', 'view', 'picnic']"
+        }
+      ]
+    },
+    {
+      "id": "snorkel-120",
+      "query": "a snorkelling spot, under 2 hours drive",
+      "seconds": 3.5,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJBw_AZykx1GoRGhPBxPCfoho",
+          "name": "Port Phillip Heads Marine National Park (Parks Victoria)",
+          "latitude": -38.2905288,
+          "longitude": 144.6126445,
+          "reason": "Port Phillip Heads Marine National Park offers fantastic coastal exploration and marine life. It is an easy 92-minute drive from Melbourne.",
+          "drive_minutes": 92,
+          "leave_by": "08:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Port Phillip Heads Marine National Park (Parks Victoria)",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "92 min vs limit 120"
+        },
+        {
+          "place": "Port Phillip Heads Marine National Park (Parks Victoria)",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'pier', 'marine', 'reef', 'snorkel', 'bay']"
+        }
+      ]
+    },
+    {
+      "id": "impossible-ski-30",
+      "query": "a ski resort under 30 minutes drive",
+      "seconds": 3.3,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "vague-quiet",
+      "query": "somewhere quiet to relax",
+      "seconds": 3.7,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJfZVgRsFC1moRL_wAd77WOfQ",
+          "name": "The Conservatory",
+          "latitude": -37.8140833,
+          "longitude": 144.978565,
+          "reason": "The Conservatory in Fitzroy Gardens offers a serene and floral escape right near the city center. It is an ideal spot to sit quietly and unwind among beautiful plants.",
+          "drive_minutes": null,
+          "leave_by": "09:30"
+        },
+        {
+          "place_id": "ChIJJ377be1d1moRbMixgo6rNCo",
+          "name": "Women's Peace Garden",
+          "latitude": -37.7910057,
+          "longitude": 144.9241883,
+          "reason": "The Women's Peace Garden provides a peaceful, secluded sanctuary with a short 17-minute drive from central Melbourne. Perfect for a quiet moment of reflection.",
+          "drive_minutes": 17,
+          "leave_by": "09:00"
+        }
+      ],
+      "checks": []
+    }
+  ]
+}

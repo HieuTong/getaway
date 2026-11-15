@@ -44,6 +44,14 @@ def _latlng(latitude: float, longitude: float) -> dict:
     return {"location": {"latLng": {"latitude": latitude, "longitude": longitude}}}
 
 
+def _municipality(place: dict) -> str | None:
+    """The place's local council (e.g. "Yarra Ranges Shire"), which decides its CFA fire district."""
+    for component in place.get("addressComponents", []):
+        if "administrative_area_level_2" in component.get("types", []):
+            return component.get("longText")
+    return None
+
+
 def search_places(query: str) -> dict:
     """Places API (New) text search around Melbourne. Returns {"places": [...]} or {"error": ...}."""
     try:
@@ -51,7 +59,8 @@ def search_places(query: str) -> dict:
             PLACES_URL,
             headers={
                 "X-Goog-Api-Key": MAPS_SERVER_KEY,
-                "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating",
+                "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,"
+                                    "places.rating,places.addressComponents",
             },
             json={
                 "textQuery": f"{query} near Melbourne, Victoria",
@@ -77,6 +86,7 @@ def search_places(query: str) -> dict:
             "rating": place.get("rating"),
             "latitude": place["location"]["latitude"],
             "longitude": place["location"]["longitude"],
+            "municipality": _municipality(place),
         }
         for place in response.json().get("places", [])
     ]

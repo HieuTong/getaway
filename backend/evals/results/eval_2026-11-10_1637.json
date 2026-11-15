@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "cases": 1,
+    "answered_with_picks": "1/1 (100%)",
+    "answered_by_ai": "1/1 (100%)",
+    "within_drive_limit": "3/3 (100%)",
+    "back_before_dark": "n/a",
+    "relevant": "3/3 (100%)",
+    "median_seconds": 7.9,
+    "slowest_seconds": 7.9,
+    "picks_per_answered_case": 3
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 7.9,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJey0z4Aln1moR9cS_PpAqwdU",
+          "name": "Sandridge Beach",
+          "latitude": -37.8401318,
+          "longitude": 144.91637369999998,
+          "reason": "Sandridge Beach is the closest option at just 15 minutes away, offering a calm and accessible spot for a quick swim.",
+          "drive_minutes": 15,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJU1MecIZp1moRXOBGZpB6j4o",
+          "name": "Elwood Beach",
+          "latitude": -37.885773,
+          "longitude": 144.980225,
+          "reason": "Elwood Beach features a lovely foreshore and is only a 20-minute drive from the city.",
+          "drive_minutes": 20,
+          "leave_by": "09:00"
+        },
+        {
+          "place_id": "ChIJMXwJ4dht1moRMbrTAoiKT2U",
+          "name": "Mentone Beach",
+          "latitude": -37.9875387,
+          "longitude": 145.05566900000002,
+          "reason": "Mentone Beach is a classic, picturesque bay beach located about 38 minutes away.",
+          "drive_minutes": 38,
+          "leave_by": "09:00"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Sandridge Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "15 min vs limit 60"
+        },
+        {
+          "place": "Sandridge Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Elwood Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "20 min vs limit 60"
+        },
+        {
+          "place": "Elwood Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "38 min vs limit 60"
+        },
+        {
+          "place": "Mentone Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'bay', 'swim']"
+        }
+      ]
+    }
+  ]
+}

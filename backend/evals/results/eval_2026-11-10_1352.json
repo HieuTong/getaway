@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "cases": 1,
+    "answered_with_picks": "0/1 (0%)",
+    "answered_by_ai": "1/1 (100%)",
+    "within_drive_limit": "n/a",
+    "back_before_dark": "n/a",
+    "relevant": "n/a",
+    "median_seconds": 216.7,
+    "slowest_seconds": 216.7,
+    "picks_per_answered_case": 0
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 216.7,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    }
+  ]
+}

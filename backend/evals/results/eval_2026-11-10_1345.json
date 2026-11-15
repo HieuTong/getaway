@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "cases": 3,
+    "answered_with_picks": "0/3 (0%)",
+    "answered_by_ai": "3/3 (100%)",
+    "within_drive_limit": "n/a",
+    "back_before_dark": "n/a",
+    "relevant": "n/a",
+    "median_seconds": 119.6,
+    "slowest_seconds": 149.4,
+    "picks_per_answered_case": 0
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 62.4,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "shady-forest-90",
+      "query": "a shady forest walk for a hot day, under 90 minutes drive",
+      "seconds": 119.6,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "waterfall-dark",
+      "query": "a waterfall hike, back before dark, under 2 hours drive",
+      "seconds": 149.4,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [],
+      "checks": []
+    }
+  ]
+}
