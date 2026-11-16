@@ -16,3 +16,4 @@ DerivedData/
 .DS_Store
 traffic-gnn/data/
 traffic-gnn/.venv/
+traffic-gnn/*.zip
