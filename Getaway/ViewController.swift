@@ -55,6 +55,38 @@ final class ViewController: UIViewController {
         return label
     }()
 
+    /// One short line on the map. The full bushfire note is in each pick's sheet, which scrolls,
+    /// so the map isn't covered by a large banner while the sheet takes the bottom half.
+    private let fireNoteRow: UIStackView = {
+        let icon = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
+        icon.tintColor = .systemOrange
+        icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .footnote)
+        icon.setContentHuggingPriority(.required, for: .horizontal)
+
+        let label = UILabel()
+        label.text = "Bushfire safety: read the note on each pick before you go."
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .label // orange text on white is too faint to read; the icon carries the colour
+        label.numberOfLines = 0
+
+        let row = UIStackView(arrangedSubviews: [icon, label])
+        row.spacing = 6
+        row.alignment = .center
+        row.isHidden = true
+        row.isAccessibilityElement = true
+        row.accessibilityLabel = label.text
+        return row
+    }()
+
+    private lazy var summaryStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [summaryLabel, fireNoteRow])
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
     private lazy var summaryCard: UIView = {
         let card = UIView()
         card.backgroundColor = .systemBackground
@@ -65,12 +97,12 @@ final class ViewController: UIViewController {
         card.layer.shadowRadius = 6
         card.isHidden = true
         card.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(summaryLabel)
+        card.addSubview(summaryStack)
         NSLayoutConstraint.activate([
-            summaryLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
-            summaryLabel.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12),
-            summaryLabel.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
-            summaryLabel.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14)
+            summaryStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
+            summaryStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12),
+            summaryStack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 14),
+            summaryStack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14)
         ])
         return card
     }()
@@ -239,14 +271,26 @@ final class ViewController: UIViewController {
                 rating: nil,
                 address: nil,
                 attributions: nil,
-                agentReason: [suggestion.reason, leaveBy].compactMap { $0 }.joined(separator: " ")
+                agentReason: [suggestion.reason, leaveBy].compactMap { $0 }.joined(separator: " "),
+                fireDanger: FireDanger(apiValue: suggestion.fireDanger),
+                totalFireBan: suggestion.totalFireBan,
+                fireDistrict: suggestion.fireDistrict,
+                safetyNote: plan.safetyNote
             )
         }
         kindControl.selectedSegmentIndex = UISegmentedControl.noSegment // we're showing AI picks, not a category
-        showSummary(plan.summary)
-        show(destinations, emptyMessage: "The planner couldn't find places that fit. Try describing your trip differently.")
+        showSummary(plan.summary, showsFireNote: plan.safetyNote != nil)
+        // If the fire rules removed every match, the safety note explains why there are no picks.
+        show(destinations, emptyMessage: plan.safetyNote ?? "The planner couldn't find places that fit. Try describing your trip differently.")
         if let best = destinations.first {
             showDetail(for: best) // open the top pick straight away, with the agent's reason
+        }
+        if let note = plan.safetyNote {
+            // Announced after the sheet appears, so VoiceOver's screen change doesn't cut the warning off.
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                UIAccessibility.post(notification: .announcement, argument: note)
+            }
         }
     }
 
@@ -258,8 +302,9 @@ final class ViewController: UIViewController {
         }
     }
 
-    private func showSummary(_ text: String?) {
+    private func showSummary(_ text: String?, showsFireNote: Bool = false) {
         summaryLabel.text = text
+        fireNoteRow.isHidden = !(showsFireNote && text != nil)
         summaryCard.isHidden = (text == nil)
         view.layoutIfNeeded() // the card's height is only known after layout
         updateMapPadding()
@@ -358,7 +403,12 @@ extension ViewController: GMSMapViewDelegate {
 // UI-only knowledge lives with the UI, not in the model.
 private extension Destination {
     var subtitle: String {
-        if let agentReason { return agentReason }
+        if let agentReason {
+            if let fireDanger, fireDanger.isElevated {
+                return "Fire danger: \(fireDanger.title). \(agentReason)" // the risk comes first, before the pitch
+            }
+            return agentReason
+        }
         let ratingText = rating.map { String(format: "★ %.1f", $0) }
         return [ratingText, address].compactMap { $0 }.joined(separator: " · ")
     }

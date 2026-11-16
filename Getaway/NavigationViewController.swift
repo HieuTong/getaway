@@ -20,6 +20,7 @@ final class NavigationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        print("[Nav] navigation screen loaded for \(destination.name)")
 
         mapView = GMSMapView(options: GMSMapViewOptions())
         let bottomBar = makeBottomBar()
@@ -96,6 +97,7 @@ final class NavigationViewController: UIViewController {
         // The dialog only appears the first time; after that the callback fires straight away.
         let options = GMSNavigationTermsAndConditionsOptions(companyName: "Getaway")
         GMSNavigationServices.showTermsAndConditionsDialogIfNeeded(with: options) { [weak self] accepted in
+            print("[Nav] terms accepted: \(accepted)")
             guard let self else { return }
             guard accepted else {
                 endNavigation()
@@ -112,28 +114,39 @@ final class NavigationViewController: UIViewController {
         Task { [weak self] in
             do {
                 _ = try await LocationProvider.shared.currentCoordinate()
+                print("[Nav] got a GPS fix")
                 self?.startGuidance()
             } catch {
+                print("[Nav] location failed: \(error.localizedDescription)")
                 self?.showFailure(error.localizedDescription)
             }
         }
     }
 
     private func startGuidance() {
-        // We kept Google's place ID from stage 2, so the SDK routes to the exact place, not a guessed address.
+        // We kept Google's place ID, so the SDK routes to the exact place, not a guessed address.
         guard let waypoint = GMSNavigationWaypoint(placeID: destination.id, title: destination.name) else {
             showFailure("This place can't be used as a navigation destination.")
             return
         }
 
+        // Without a navigator, setDestinations would silently do nothing, so say so instead.
+        guard let navigator = mapView.navigator else {
+            print("[Nav] no navigator on the map")
+            showFailure("Navigation isn't available on this map (no navigator). Check that the Navigation SDK is enabled for this API key and the terms were accepted.")
+            return
+        }
+
         // With no origin given, the SDK routes from the device's current GPS position.
-        mapView.navigator?.setDestinations([waypoint]) { [weak self] routeStatus in
+        print("[Nav] requesting a route to \(destination.name)")
+        navigator.setDestinations([waypoint]) { [weak self] routeStatus in
+            print("[Nav] route status: \(routeStatus.rawValue) (0 = OK)")
             guard let self else { return }
             guard routeStatus == .OK else {
                 showFailure("Google couldn't plan a route (status \(routeStatus.rawValue)). Check your connection and that the Navigation SDK is enabled for your API key.")
                 return
             }
-            mapView.navigator?.isGuidanceActive = true
+            navigator.isGuidanceActive = true
             mapView.cameraMode = .following
         }
     }

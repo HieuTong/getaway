@@ -25,4 +25,10 @@ struct Destination: Identifiable {
     let address: String?
     let attributions: NSAttributedString? // Places terms: show these wherever place details appear
     var agentReason: String? = nil        // why the AI agent picked this place, if it did
+
+    // Bushfire facts for AI picks, from the CFA via our backend. nil means unknown, never "safe".
+    var fireDanger: FireDanger? = nil
+    var totalFireBan: Bool? = nil
+    var fireDistrict: String? = nil
+    var safetyNote: String? = nil         // the plan's bushfire advice, shown with every pick
 }

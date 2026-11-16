@@ -7,6 +7,8 @@ final class DestinationDetailViewController: UIViewController {
     // Every row the list can show. Diffable data sources need items to be Hashable.
     private enum Item: Hashable {
         case reason(String)
+        case fire(danger: FireDanger?, detail: String)
+        case safetyNote(String)
         case loading
         case failed(message: String)
         case summary(String)
@@ -23,9 +25,31 @@ final class DestinationDetailViewController: UIViewController {
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
-    /// The agent's "why", shown first for AI picks. Empty for normal category results.
-    private var reasonItems: [Item] {
-        destination.agentReason.map { [.reason($0)] } ?? []
+    /// What the AI agent says about this pick: its reason, then bushfire safety. Empty for category results,
+    /// because fire data only comes with the agent's plans.
+    private var agentItems: [Item] {
+        guard destination.kind == .suggestion else { return [] }
+        var items: [Item] = []
+        if let reason = destination.agentReason { items.append(.reason(reason)) }
+        items.append(.fire(danger: destination.fireDanger, detail: fireDetail))
+        if let note = destination.safetyNote { items.append(.safetyNote(note)) }
+        return items
+    }
+
+    /// "Central fire district · Total Fire Ban · Rating: CFA"
+    private var fireDetail: String {
+        let parts: [String?] = [
+            destination.fireDistrict.map { "\($0) fire district" },
+            destination.totalFireBan == true ? "Total Fire Ban" : nil,
+            "Rating: CFA"
+        ]
+        return parts.compactMap { $0 }.joined(separator: " · ")
+    }
+
+    /// The official action for the rating; unknown is said plainly, never shown as safe.
+    private static func fireTitle(for danger: FireDanger?) -> String {
+        guard let danger else { return "Fire danger not forecast yet for this date" }
+        return danger.action ?? "No fire danger rating issued"
     }
 
     /// "Leaving tomorrow..." or "Leaving Sat 27 Dec...", matching the day the user is planning for.
@@ -159,10 +183,18 @@ final class DestinationDetailViewController: UIViewController {
         start.cornerStyle = .large
         let startButton = UIButton(configuration: start, primaryAction: UIAction { [weak self] _ in
             guard let self else { return }
-            present(NavigationViewController(destination: destination), animated: true)
+            GoogleMapsHandoff.openDirections(to: destination) // in-app NavigationViewController needs a billing-enabled project
         })
 
         var rows: [UIView] = [topRow]
+        if destination.kind == .suggestion {
+            // The fire danger for this place on the trip date, at a glance, in the rating's own colour.
+            let badge = FireDangerBadge(danger: destination.fireDanger, totalFireBan: destination.totalFireBan)
+            let badgeRow = UIStackView(arrangedSubviews: [badge])
+            badgeRow.axis = .vertical
+            badgeRow.alignment = .leading // the pill keeps its natural width instead of stretching across
+            rows.append(badgeRow)
+        }
         if let address = destination.address {
             let addressLabel = UILabel()
             addressLabel.text = address
@@ -218,6 +250,29 @@ final class DestinationDetailViewController: UIViewController {
                 content.text = text
                 content.textProperties.numberOfLines = 0 // the agent's reason can wrap over several lines
 
+            case .fire(let danger, let detail):
+                content = .subtitleCell()
+                content.image = UIImage(systemName: "flame.fill")
+                content.imageProperties.tintColor = danger?.symbolTint ?? .secondaryLabel
+                content.text = Self.fireTitle(for: danger)
+                content.textProperties.numberOfLines = 0
+                content.secondaryText = detail
+                content.secondaryTextProperties.color = .secondaryLabel
+                content.secondaryTextProperties.numberOfLines = 0
+                cell.accessories = [.disclosureIndicator()] // opens the CFA's ratings page (their feed terms ask for a link)
+                cell.accessibilityHint = "Opens the CFA's fire danger ratings page"
+
+            case .safetyNote(let note):
+                content = .subtitleCell()
+                content.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                content.imageProperties.tintColor = .systemOrange
+                content.text = note
+                content.textProperties.numberOfLines = 0
+                content.secondaryText = "Check VicEmergency before you leave"
+                content.secondaryTextProperties.color = .link
+                cell.accessories = [.disclosureIndicator()]
+                cell.accessibilityHint = "Opens VicEmergency"
+
             case .loading:
                 content.text = "Checking traffic…"
                 content.textProperties.color = .secondaryLabel
@@ -271,9 +326,14 @@ final class DestinationDetailViewController: UIViewController {
             elementKind: UICollectionView.elementKindSectionFooter
         ) { [weak self] footer, _, _ in
             var content = UIListContentConfiguration.groupedFooter()
-            let providers = self?.destination.attributions?.string ?? ""
-            content.text = providers.isEmpty ? "Place data from Google Maps"
-                                             : "Place data from Google Maps · \(providers)"
+            var sources = ["Place data from Google Maps"]
+            if let providers = self?.destination.attributions?.string, !providers.isEmpty {
+                sources.append(providers)
+            }
+            if self?.destination.kind == .suggestion {
+                sources.append("Fire danger ratings: CFA")
+            }
+            content.text = sources.joined(separator: " · ")
             footer.contentConfiguration = content
         }
 
@@ -298,7 +358,7 @@ final class DestinationDetailViewController: UIViewController {
 
     private func loadEstimates() {
         loadTask?.cancel()
-        showItems(reasonItems + [.loading])
+        showItems(agentItems + [.loading])
         loadTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -307,7 +367,7 @@ final class DestinationDetailViewController: UIViewController {
                 showEstimates(estimates)
             } catch {
                 guard !Task.isCancelled else { return }
-                showItems(reasonItems + [.failed(message: error.localizedDescription)])
+                showItems(agentItems + [.failed(message: error.localizedDescription)])
             }
         }
     }
@@ -315,7 +375,7 @@ final class DestinationDetailViewController: UIViewController {
     private func showEstimates(_ estimates: [RouteEstimate]) {
         guard let best = estimates.min(by: { $0.duration < $1.duration }),
               let worst = estimates.max(by: { $0.duration < $1.duration }) else {
-            showItems(reasonItems + [.failed(message: "Google returned no drive times.")])
+            showItems(agentItems + [.failed(message: "Google returned no drive times.")])
             return
         }
 
@@ -329,7 +389,7 @@ final class DestinationDetailViewController: UIViewController {
                           duration: estimate.duration,
                           isBest: estimate.departure == best.departure)
         }
-        showItems(reasonItems + [.summary(summary)] + rows)
+        showItems(agentItems + [.summary(summary)] + rows)
         onBestRoute(best)
     }
 }
@@ -337,14 +397,21 @@ final class DestinationDetailViewController: UIViewController {
 // MARK: - UICollectionViewDelegate
 
 extension DestinationDetailViewController: UICollectionViewDelegate {
-    // Only the error row is tappable (to retry). The other rows are information, not buttons.
+    // Tappable rows: retry after an error, and the two fire safety links. The rest is information.
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        if case .failed = dataSource.itemIdentifier(for: indexPath) { return true }
-        return false
+        switch dataSource.itemIdentifier(for: indexPath) {
+        case .failed, .fire, .safetyNote: return true
+        default: return false
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        loadEstimates()
+        switch dataSource.itemIdentifier(for: indexPath) {
+        case .failed: loadEstimates()
+        case .fire: UIApplication.shared.open(FireSafetyLinks.cfaRatings)
+        case .safetyNote: UIApplication.shared.open(FireSafetyLinks.vicEmergency)
+        default: break
+        }
     }
 }

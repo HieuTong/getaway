@@ -1,6 +1,7 @@
 import CoreLocation
 
 /// The backend's answer. Property names are camelCase; the decoder maps them from the API's snake_case.
+/// New fields are optional, so the app still works with an older backend that doesn't send them.
 struct AgentPlan: Decodable {
     struct Suggestion: Decodable {
         let placeId: String
@@ -10,10 +11,15 @@ struct AgentPlan: Decodable {
         let reason: String
         let driveMinutes: Int?
         let leaveBy: String?
+        let fireDanger: String?   // CFA rating text, e.g. "HIGH"; converted safely with FireDanger(apiValue:)
+        let totalFireBan: Bool?
+        let fireDistrict: String?
     }
 
     let summary: String
     let suggestions: [Suggestion]
+    let safetyNote: String?       // bushfire advice for the whole plan
+    let usedAi: Bool?             // false when the rule-based fallback answered
 }
 
 enum AgentError: LocalizedError {
@@ -67,7 +73,7 @@ final class AgentService {
         }
 
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase // place_id -> placeId
+        decoder.keyDecodingStrategy = .convertFromSnakeCase // place_id -> placeId, fire_danger -> fireDanger
         return try decoder.decode(AgentPlan.self, from: data)
     }
 }

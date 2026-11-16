@@ -57,6 +57,16 @@ enum FireDanger: String, CaseIterable {
         }
     }
 
+    /// For small icons on a white or dark background, where yellow would be too faint to see.
+    var symbolTint: UIColor {
+        switch self {
+        case .noRating: return .secondaryLabel
+        case .moderate: return .systemGreen
+        case .high, .extreme: return .systemOrange
+        case .catastrophic: return .systemRed
+        }
+    }
+
     private var rank: Int {
         switch self {
         case .noRating: return 0
@@ -65,11 +75,6 @@ enum FireDanger: String, CaseIterable {
         case .extreme: return 3
         case .catastrophic: return 4
         }
-    }
-
-    /// The most dangerous known level in a list, or nil if none is known.
-    static func worst(_ levels: [FireDanger?]) -> FireDanger? {
-        levels.compactMap { $0 }.max { $0.rank < $1.rank }
     }
 }
 
@@ -125,82 +130,6 @@ final class FireDangerBadge: UIView {
         if totalFireBan == true { parts.append("Total Fire Ban") }
         return parts.joined(separator: " · ")
     }
-}
-
-/// The safety message above the AI's picks. Shown only when the backend sends a note, so it keeps its meaning.
-final class FireSafetyBanner: UIView {
-
-    init(note: String, worstDanger: FireDanger?) {
-        super.init(frame: .zero)
-        backgroundColor = .secondarySystemGroupedBackground
-        layer.cornerRadius = 12
-        layer.cornerCurve = .continuous
-        clipsToBounds = true
-
-        // A coloured edge shows the most serious rating among the picks (orange when none is high).
-        let accentColor: UIColor = {
-            if let worstDanger, worstDanger.isElevated { return worstDanger.color }
-            return .systemOrange
-        }()
-        let accent = UIView()
-        accent.backgroundColor = accentColor
-        accent.translatesAutoresizingMaskIntoConstraints = false
-
-        let icon = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
-        icon.tintColor = worstDanger == .catastrophic ? .systemRed : .systemOrange
-        icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
-        icon.setContentHuggingPriority(.required, for: .horizontal)
-
-        let message = UILabel()
-        message.text = note
-        message.font = .preferredFont(forTextStyle: .subheadline)
-        message.adjustsFontForContentSizeCategory = true
-        message.numberOfLines = 0
-
-        let header = UIStackView(arrangedSubviews: [icon, message])
-        header.spacing = 8
-        header.alignment = .top
-
-        var checkConfig = UIButton.Configuration.filled()
-        checkConfig.title = "Check VicEmergency"
-        checkConfig.image = UIImage(systemName: "arrow.up.right.square")
-        checkConfig.imagePlacement = .trailing
-        checkConfig.imagePadding = 6
-        checkConfig.cornerStyle = .medium
-        checkConfig.buttonSize = .small
-        let checkButton = UIButton(configuration: checkConfig, primaryAction: UIAction { _ in
-            UIApplication.shared.open(FireSafetyLinks.vicEmergency)
-        })
-
-        var sourceConfig = UIButton.Configuration.plain()
-        sourceConfig.title = "Fire danger ratings: CFA"
-        sourceConfig.buttonSize = .mini
-        sourceConfig.contentInsets = .zero
-        let sourceButton = UIButton(configuration: sourceConfig, primaryAction: UIAction { _ in
-            UIApplication.shared.open(FireSafetyLinks.cfaRatings) // the CFA's feed terms ask for a link back
-        })
-
-        let stack = UIStackView(arrangedSubviews: [header, checkButton, sourceButton])
-        stack.axis = .vertical
-        stack.alignment = .leading
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(accent)
-        addSubview(stack)
-        NSLayoutConstraint.activate([
-            accent.leadingAnchor.constraint(equalTo: leadingAnchor),
-            accent.topAnchor.constraint(equalTo: topAnchor),
-            accent.bottomAnchor.constraint(equalTo: bottomAnchor),
-            accent.widthAnchor.constraint(equalToConstant: 4),
-            stack.leadingAnchor.constraint(equalTo: accent.trailingAnchor, constant: 12),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
-        ])
-    }
-
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 }
 
 private extension UIFont {
