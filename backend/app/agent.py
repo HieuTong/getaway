@@ -14,8 +14,9 @@ from . import fire, tools
 from .config import GEMINI_API_KEY, GEMINI_FALLBACK_MODELS, GEMINI_MODEL
 from .parsing import drive_limit_minutes
 
-# Errors that mean "this model can't serve us right now" (overloaded or out of quota): try the next model.
-TEMPORARY_STATUS_CODES = {429, 503}
+# Errors that mean "this model can't serve us right now": out of quota (429), server error (500),
+# overloaded (503) or too slow on Google's side (504). All of them: try the next model.
+TEMPORARY_STATUS_CODES = {429, 500, 503, 504}
 # Only overload (503) clears within seconds. A 429 is usually the daily quota, so don't retry the same model.
 RETRY_SAME_MODEL_CODES = [503]
 
@@ -137,11 +138,19 @@ def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_
 
     # 2. Bushfire rules, applied by code before any model sees the candidates (see _fire_filter).
     places, safety_note = _fire_filter(query, places)
-    candidates = {p["place_id"]: p for p in places}  # removed places can't be chosen, even by a mistaken model
     if not places:
         return Plan(summary="Every match is in an area with dangerous fire conditions that day, so Getaway "
                             "isn't suggesting any of them. Try a beach or a town instead.",
                     suggestions=[], used_ai=False, safety_note=safety_note)
+
+    # The user's drive limit, also enforced in code. The evaluation caught the model choosing places
+    # with no known drive time even though the prompt told it to skip them.
+    places = _drive_filter(query, places)
+    if not places:
+        return Plan(summary="No matching places have a known drive time within your limit. "
+                            "Try a longer drive or a different kind of place.",
+                    suggestions=[], used_ai=False, safety_note=safety_note)
+    candidates = {p["place_id"]: p for p in places}  # removed places can't be chosen, even by a mistaken model
 
     # 3. One Gemini call to choose and explain, trying each model in turn.
     facts = {
@@ -183,6 +192,14 @@ def plan_trip(query: str, origin_latitude: float, origin_longitude: float, trip_
     plan = _rule_based_plan(query, places)
     plan.safety_note = safety_note
     return plan
+
+
+def _drive_filter(query: str, places: list[dict]) -> list[dict]:
+    """Keeps only places with a known drive time within the user's limit. No limit given: keeps everything."""
+    limit = drive_limit_minutes(query)
+    if limit is None:
+        return places
+    return [p for p in places if p.get("drive_minutes") is not None and p["drive_minutes"] <= limit]
 
 
 def is_bush_trip(query: str) -> bool:

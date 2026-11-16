@@ -120,3 +120,34 @@ def test_search_places_reads_the_council_for_fire_districts(monkeypatch):
     monkeypatch.setattr(tools._http, "post", lambda *args, **kwargs: FakeResponse(payload))
     result = tools.search_places("waterfall")
     assert result["places"][0]["municipality"] == "Shire of Yarra Ranges"
+
+
+def test_drive_filter_enforces_the_limit_in_code():
+    # Regression: the eval caught the model picking places with no drive time under a 70-minute limit.
+    places = [place("no-time", 4.9, None), place("too-far", 4.8, 95), place("ok", 4.2, 60)]
+    assert [p["place_id"] for p in agent._drive_filter("a picnic spot, under 70 minutes drive", places)] == ["ok"]
+    # No limit in the request: nothing is removed.
+    assert len(agent._drive_filter("a quiet beach", places)) == 3
+
+
+def test_gemini_server_timeout_falls_back_instead_of_failing(monkeypatch):
+    # Regression: a 504 DEADLINE_EXCEEDED from Gemini used to fail the whole plan.
+    from datetime import date
+    from google.genai import errors as genai_errors
+    from app import fire
+
+    candidate = place("real", 4.5, 40)
+    monkeypatch.setattr(agent, "_search", lambda query: {"real": dict(candidate)})
+    monkeypatch.setattr(tools, "drive_minutes_matrix", lambda *args: [40])
+    monkeypatch.setattr(tools, "sunset_time", lambda *args: "20:30")
+    monkeypatch.setattr(fire, "fire_outlook", lambda *args: None)
+
+    def timed_out(*args, **kwargs):
+        raise genai_errors.ServerError(504, {"error": {"code": 504, "message": "Deadline expired",
+                                                       "status": "DEADLINE_EXCEEDED"}})
+
+    monkeypatch.setattr(agent, "_generate", timed_out)
+    plan = agent.plan_trip("a quiet beach under 60 minutes drive", -37.81, 144.96, date(2026, 12, 5), use_cache=False)
+
+    assert plan.used_ai is False                       # every model timed out: the rule-based plan answered
+    assert [s.place_id for s in plan.suggestions] == ["real"]
