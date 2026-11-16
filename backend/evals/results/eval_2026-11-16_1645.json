@@ -1,0 +1,321 @@
+{
+  "summary": {
+    "cases": 15,
+    "answered_with_picks": "5/15 (33%)",
+    "answered_by_ai": "5/15 (33%)",
+    "within_drive_limit": "3/3 (100%)",
+    "back_before_dark": "n/a",
+    "relevant": "5/6 (83%)",
+    "median_seconds": 1.4,
+    "slowest_seconds": 119.2,
+    "picks_per_answered_case": 1.8
+  },
+  "results": [
+    {
+      "id": "beach-60",
+      "query": "a beach for a swim, under 60 minutes drive",
+      "seconds": 1.6,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "shady-forest-90",
+      "query": "a shady forest walk for a hot day, under 90 minutes drive",
+      "seconds": 119.2,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJJ8beSXI51moRsIQxBXZWBA8",
+          "name": "Yarran Dheran Nature Reserve",
+          "latitude": -37.8081263,
+          "longitude": 145.2036814,
+          "reason": "Yarran Dheran Nature Reserve offers lovely shaded bush tracks just a short drive from the city.",
+          "drive_minutes": 34,
+          "leave_by": "08:00",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Yarran Dheran Nature Reserve",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "34 min vs limit 90"
+        },
+        {
+          "place": "Yarran Dheran Nature Reserve",
+          "check": "relevant",
+          "passed": false,
+          "detail": "expects one of ['forest', 'walk', 'trail', 'rainforest', 'gully']"
+        }
+      ]
+    },
+    {
+      "id": "waterfall-dark",
+      "query": "a waterfall hike, back before dark, under 2 hours drive",
+      "seconds": 1.5,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "kids-beach-75",
+      "query": "a calm swimming beach for young kids, under 75 minutes drive",
+      "seconds": 1.3,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "sunset-lookout-60",
+      "query": "a lookout for sunset, under 60 minutes drive",
+      "seconds": 89.5,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJia72Io5o1moRiggVr6YUgtI",
+          "name": "Point Ormond Lookout",
+          "latitude": -37.8819552,
+          "longitude": 144.9762313,
+          "reason": "A fantastic local lookout offering panoramic bay views, ideal for catching the sunset just a short drive from Melbourne.",
+          "drive_minutes": 20,
+          "leave_by": "19:30",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Point Ormond Lookout",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "20 min vs limit 60"
+        },
+        {
+          "place": "Point Ormond Lookout",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['lookout', 'view', 'summit', 'point', 'hill']"
+        }
+      ]
+    },
+    {
+      "id": "surf-120",
+      "query": "a surf beach, 2 hours away at most",
+      "seconds": 117.0,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJTWn2fJe11WoR1T9XokW8Orc",
+          "name": "Number 16 Beach",
+          "latitude": -38.393242199999996,
+          "longitude": 144.7917644,
+          "reason": "Number 16 Beach is about 77 minutes away on the Mornington Peninsula, offering fantastic surf conditions for a day trip.",
+          "drive_minutes": 77,
+          "leave_by": "08:00",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Number 16 Beach",
+          "check": "within_drive_limit",
+          "passed": true,
+          "detail": "77 min vs limit 120"
+        },
+        {
+          "place": "Number 16 Beach",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['beach', 'surf', 'point']"
+        }
+      ]
+    },
+    {
+      "id": "easy-walk-45",
+      "query": "an easy walk with a cafe nearby, under 45 minutes drive",
+      "seconds": 1.4,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "boxing-day-beach",
+      "query": "a beach on Boxing Day, under 90 minutes drive",
+      "seconds": 1.0,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "dandenongs-no-limit",
+      "query": "a rainforest walk in the Dandenong Ranges",
+      "seconds": 117.6,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJqeipof4k1moREPExBXZWBA8",
+          "name": "Dandenong Ranges National Park",
+          "latitude": -37.8900735,
+          "longitude": 145.3176822,
+          "reason": "Explore the lush trails and beautiful fern gullies of Dandenong Ranges National Park.",
+          "drive_minutes": null,
+          "leave_by": "08:30",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        },
+        {
+          "place_id": "ChIJ9UvrQIIk1moRAEt9IANVKmY",
+          "name": "Sherbrooke Falls",
+          "latitude": -37.8876048,
+          "longitude": 145.3520675,
+          "reason": "Take a peaceful walk through the forest to the charming Sherbrooke Falls.",
+          "drive_minutes": null,
+          "leave_by": "09:00",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        },
+        {
+          "place_id": "ChIJMTu2UX0k1moR4AgIIRE9uCs",
+          "name": "Sherbrooke Picnic Ground",
+          "latitude": -37.8810812,
+          "longitude": 145.3592354,
+          "reason": "Relax in the heart of the forest at Sherbrooke Picnic Ground.",
+          "drive_minutes": null,
+          "leave_by": "09:30",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        }
+      ],
+      "checks": [
+        {
+          "place": "Dandenong Ranges National Park",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        },
+        {
+          "place": "Sherbrooke Falls",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        },
+        {
+          "place": "Sherbrooke Picnic Ground",
+          "check": "relevant",
+          "passed": true,
+          "detail": "expects one of ['forest', 'walk', 'track', 'gully', 'falls', 'ranges']"
+        }
+      ]
+    },
+    {
+      "id": "hike-length-vs-drive",
+      "query": "a 2 hour hike, under 60 minutes drive, back before dark",
+      "seconds": 1.2,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "dog-beach-80",
+      "query": "a dog-friendly beach, under 80 minutes drive",
+      "seconds": 1.2,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "picnic-view-70",
+      "query": "a picnic spot with a view, under 70 minutes drive",
+      "seconds": 1.1,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "snorkel-120",
+      "query": "a snorkelling spot, under 2 hours drive",
+      "seconds": 1.2,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "impossible-ski-30",
+      "query": "a ski resort under 30 minutes drive",
+      "seconds": 1.4,
+      "error": null,
+      "used_ai": false,
+      "suggestions": [],
+      "checks": []
+    },
+    {
+      "id": "vague-quiet",
+      "query": "somewhere quiet to relax",
+      "seconds": 26.0,
+      "error": null,
+      "used_ai": true,
+      "suggestions": [
+        {
+          "place_id": "ChIJaY5nBiFD1moRMkcUHjNOwFw",
+          "name": "Sense Of Self (SOS)",
+          "latitude": -37.797454200000004,
+          "longitude": 144.9858927,
+          "reason": "Sense Of Self offers a peaceful urban bathhouse experience ideal for deep relaxation.",
+          "drive_minutes": null,
+          "leave_by": "09:00",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        },
+        {
+          "place_id": "ChIJfZVgRsFC1moRL_wAd77WOfQ",
+          "name": "The Conservatory",
+          "latitude": -37.8140833,
+          "longitude": 144.978565,
+          "reason": "The Conservatory provides a serene indoor botanical escape with beautiful floral displays.",
+          "drive_minutes": null,
+          "leave_by": "09:30",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        },
+        {
+          "place_id": "ChIJX6ytzMNC1moREIYxBXZWBA8",
+          "name": "Fitzroy Gardens",
+          "latitude": -37.812721499999995,
+          "longitude": 144.9800679,
+          "reason": "Fitzroy Gardens features quiet historic pathways and shady trees for a calm stroll.",
+          "drive_minutes": null,
+          "leave_by": "09:30",
+          "fire_danger": null,
+          "total_fire_ban": null,
+          "fire_district": "Central"
+        }
+      ],
+      "checks": []
+    }
+  ]
+}
