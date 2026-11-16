@@ -11,6 +11,7 @@ final class ViewController: UIViewController {
     private var routeLine: GMSPolyline?
     private var isShowingDetail = false
     private var agentTripDate: Date? // the day the AI picks on the map were planned for
+    private var shownDestinations: [Destination] = [] // the pins on the map, kept in view when a route is drawn
 
     private lazy var kindControl: UISegmentedControl = {
         let control = UISegmentedControl(items: Destination.Kind.browsable.map(\.label))
@@ -315,6 +316,7 @@ final class ViewController: UIViewController {
     private func show(_ destinations: [Destination], emptyMessage: String = "Try another category.") {
         mapView.clear() // removes markers and any route line from before
         routeLine = nil
+        shownDestinations = destinations
         guard !destinations.isEmpty else {
             showMessage("No places found", detail: emptyMessage)
             return
@@ -374,7 +376,10 @@ final class ViewController: UIViewController {
         line.strokeColor = .systemBlue
         line.map = mapView
         routeLine = line
-        mapView.animate(with: GMSCameraUpdate.fit(GMSCoordinateBounds(path: path), withPadding: 60))
+        // Fit the route AND every pick, so the other suggestions stay on screen.
+        var bounds = GMSCoordinateBounds(path: path)
+        for destination in shownDestinations { bounds = bounds.includingCoordinate(destination.coordinate) }
+        mapView.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 60))
     }
 
     // MARK: - Alerts
